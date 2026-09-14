@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="retro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hazeyxd23</title>
+<meta name="description" content="personal site — projects, writing, and brick the mouse.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="wall"></div>
+
+<div class="wrap">
+
+  <div class="profile">
+    <div class="avatar" id="dock"></div>
+    <div class="who">
+      <h1 id="handle"></h1>
+      <div class="status"><i></i><span id="statusTxt"></span></div>
+      <p id="blurb"></p>
+    </div>
+    <div class="lvl"><div class="n" id="fedBig">0</div><div class="t">cheese fed</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-page="home">Home</button>
+    <button class="tab" data-page="blog">Blog</button>
+    <button class="tab" data-page="gallery">Gallery</button>
+    <button class="tab" data-page="about">About</button>
+    <div class="themes">
+      <button class="sw on" data-t="retro" title="retro"></button>
+      <button class="sw" data-t="hacker" title="matrix"></button>
+    </div>
+  </div>
+
+  <!-- ===== HOME ===== -->
+  <section class="page on" id="home">
+    <div class="grid">
+      <div class="col">
+
+        <div class="show stage">
+          <div class="hd">project showcase
+            <span class="r">hover to fan · click to spread</span>
+            <span class="btns"><b>_</b><b>□</b><b>×</b></span>
+          </div>
+          <div class="bd"><div class="stack" id="stack"></div></div>
+        </div>
+
+        <div class="show">
+          <div class="hd">writing showcase <span class="r" id="latestCount"></span><span class="btns"><b>_</b><b>×</b></span></div>
+          <div id="latest"></div>
+        </div>
+
+        <div class="show">
+          <div class="hd">screenshot showcase<span class="btns"><b>_</b><b>×</b></span></div>
+          <div class="bd"><div class="tiles" id="homeShots"></div></div>
+        </div>
+
+      </div>
+
+      <div class="col">
+        <div class="show">
+          <div class="hd">pc specs</div>
+          <div class="bd" id="specs"></div>
+        </div>
+        <div class="show">
+          <div class="hd">badges <span class="r" id="badgeCount"></span></div>
+          <div class="bd"><div class="badges" id="badges"></div></div>
+        </div>
+        <div class="show counts">
+          <div class="hd">collection</div>
+          <div id="counts"></div>
+        </div>
+        <div class="show">
+          <div class="hd">elsewhere</div>
+          <div class="bd" id="links" style="font-size:14px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BLOG ===== -->
+  <section class="page" id="blog">
+    <div class="chips" id="blogChips"></div>
+    <div class="show">
+      <div class="hd">posts <span class="r" id="postCount"></span><span class="btns"><b>_</b><b>×</b></span></div>
+      <div id="postList"></div>
+    </div>
+  </section>
+
+  <!-- ===== GALLERY ===== -->
+  <section class="page" id="gallery">
+    <div class="chips" id="galleryChips">
+      <button class="chip on" data-view="photos">photos</button>
+      <button class="chip" data-view="bookshelf">bookshelf</button>
+      <button class="chip" data-view="anime">anime</button>
+      <button class="chip" data-view="games">games</button>
+      <button class="chip" data-view="film">film</button>
+    </div>
+    <div class="show">
+      <div class="hd" id="galleryHd"></div>
+      <div id="galleryBody"></div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="page" id="about">
+    <div class="chips" id="aboutChips">
+      <button class="chip on" data-view="bio">bio</button>
+      <button class="chip" data-view="setup">setup</button>
+      <button class="chip" data-view="tech">tech i like</button>
+      <button class="chip" data-view="links">links</button>
+    </div>
+    <div id="aboutBody"></div>
+  </section>
+
+</div>
+
+<img id="brick" alt="brick the mouse" draggable="false">
+
+<div class="toolbar">
+  <div class="in">
+    <span>♫ <b id="nowPlaying"></b></span>
+    <span style="opacity:.35">|</span>
+    <span>brick has eaten <b id="cheeseCount2">0</b> cheese</span>
+    <span style="flex:1"></span>
+    <span id="ctx"></span>
+    <span style="opacity:.35">|</span>
+    <span><b id="visits"></b> visits</span>
+    <span style="opacity:.35">|</span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
