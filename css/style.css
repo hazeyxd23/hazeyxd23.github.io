@@ -1,0 +1,181 @@
+/* ============================================================
+   hazeyxd23 — two themes: retro (default) and hacker
+   ============================================================ */
+:root{ --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); }
+
+[data-theme="retro"]{
+  --bg:#2b1140; --deep:#1c0a2b;
+  --panel:rgba(28,10,43,.90); --panel2:rgba(95,216,207,.14);
+  --ink:#f4e6ff; --muted:#b79fd4;
+  --accent:#f7e08c; --accent2:#5fd8cf; --pink:#ef7fb6;
+  --font:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"Courier New",ui-monospace,monospace;
+  --radius:3px; --bd:2px solid #5fd8cf;
+  --hd-bg:linear-gradient(90deg,#ef7fb6 0%,rgba(239,127,182,.15) 78%,transparent 100%);
+  --hd-ink:#2b1140;
+  --shadow:4px 4px 0 rgba(0,0,0,.45);
+  --card:#f6e4f3; --card-ink:#2b1140; --card-bd:rgba(0,0,0,.35);
+  --scrim:rgba(22,7,34,.74);
+}
+[data-theme="hacker"]{
+  --bg:#000; --deep:#010601;
+  --panel:rgba(0,255,65,.05); --panel2:rgba(0,255,65,.11);
+  --ink:#00ff41; --muted:#0c9c34;
+  --accent:#00ff41; --accent2:#7dffa8; --pink:#00ff41;
+  --font:ui-monospace,"Cascadia Code","Courier New",monospace;
+  --mono:ui-monospace,"Cascadia Code","Courier New",monospace;
+  --radius:0px; --bd:1px solid #0a3d18;
+  --hd-bg:linear-gradient(90deg,rgba(0,255,65,.16),transparent 85%);
+  --hd-ink:#00ff41;
+  --shadow:0 0 22px rgba(0,255,65,.12);
+  --card:#020d05; --card-ink:#00ff41; --card-bd:#0a3d18;
+  --scrim:transparent;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:15px; line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+  transition:background-color .35s,color .35s;
+}
+#wall{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:url("../assets/retro-bg.jpg") center/cover no-repeat;
+  transition:opacity .35s;
+}
+#wall::after{content:""; position:absolute; inset:0; background:var(--scrim)}
+[data-theme="hacker"] #wall{opacity:0}
+[data-theme="hacker"] body{text-shadow:0 0 6px rgba(0,255,65,.3)}
+[data-theme="hacker"] body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:200;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{color:var(--accent2)}
+.wrap{max-width:var(--wrap); margin:0 auto; padding:26px 20px 96px; position:relative; z-index:2}
+
+/* ---------- profile ---------- */
+.profile{display:flex; gap:22px; align-items:flex-start; margin-bottom:22px; flex-wrap:wrap}
+.avatar{width:140px; height:140px; flex:none; position:relative; border-radius:var(--radius);
+  background:var(--panel); border:var(--bd); box-shadow:var(--shadow)}
+.avatar.empty::after{content:"brick is out"; position:absolute; inset:8px; display:grid; place-items:center;
+  font-family:var(--mono); font-size:10px; color:var(--muted); text-align:center;
+  border:1px dashed var(--muted); opacity:.8}
+.who{flex:1; min-width:250px}
+.who h1{margin:0; font-size:32px; font-family:var(--mono); color:var(--accent); letter-spacing:-.01em}
+.status{font-family:var(--mono); font-size:11px; color:var(--accent2); letter-spacing:.1em;
+  text-transform:uppercase; margin-top:4px}
+.status i{display:inline-block; width:7px; height:7px; background:var(--accent2); margin-right:6px}
+.who p{margin:8px 0 0; max-width:54ch; opacity:.92}
+.lvl{flex:none; text-align:center; padding:12px 18px; background:var(--panel); border:var(--bd); box-shadow:var(--shadow)}
+.lvl .n{font-size:26px; color:var(--pink); font-weight:700; line-height:1; font-family:var(--mono)}
+.lvl .t{font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.14em; text-transform:uppercase}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex; gap:4px; margin-bottom:20px; flex-wrap:wrap}
+.tab{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  padding:9px 20px; border:var(--bd); border-bottom:0; cursor:pointer; color:var(--muted);
+  background:var(--panel); border-radius:var(--radius) var(--radius) 0 0; transition:.2s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--hd-ink); background:var(--pink)}
+[data-theme="hacker"] .tab.on{color:#000}
+.themes{margin-left:auto; display:flex; gap:6px; align-self:center}
+.sw{width:28px; height:28px; border:var(--bd); cursor:pointer; opacity:.5; transition:.2s}
+.sw:hover{opacity:.8}
+.sw.on{opacity:1; box-shadow:0 0 0 2px var(--accent)}
+.sw[data-t="retro"]{background:linear-gradient(135deg,#f7e08c,#ef7fb6 55%,#5fd8cf)}
+.sw[data-t="hacker"]{background:linear-gradient(135deg,#00ff41,#000)}
+
+/* ---------- showcases ---------- */
+.grid{display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start}
+.col{display:flex; flex-direction:column; gap:18px; min-width:0}
+.show{border-radius:var(--radius); overflow:hidden; background:var(--panel); border:var(--bd); box-shadow:var(--shadow)}
+.show > .hd{padding:8px 14px; font-family:var(--mono); font-size:11px; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--hd-ink); background:var(--hd-bg);
+  display:flex; align-items:center; gap:10px}
+[data-theme="hacker"] .show > .hd{color:var(--ink)}
+.hd .r{margin-left:auto; color:var(--hd-ink); opacity:.7; letter-spacing:.04em; text-transform:none}
+[data-theme="hacker"] .hd .r{color:var(--muted); opacity:1}
+.hd .btns{display:flex; gap:4px; margin-left:8px}
+.hd .btns b{width:14px; height:13px; display:grid; place-items:center; font-size:9px; font-weight:400;
+  background:var(--panel); color:var(--ink); border:1px solid currentColor; opacity:.85}
+.show > .bd{padding:16px}
+.row{display:flex; justify-content:space-between; gap:14px; padding:10px 14px; transition:background .18s}
+.row:hover{background:var(--panel2)}
+.row .date,.row .sub{font-family:var(--mono); font-size:12px; color:var(--muted); white-space:nowrap}
+.spec{display:flex; justify-content:space-between; padding:6px 0; font-family:var(--mono); font-size:12px}
+.spec span:first-child{color:var(--muted)}
+.badges{display:flex; flex-wrap:wrap; gap:8px}
+.badge{display:flex; align-items:center; gap:7px; padding:6px 11px; background:var(--panel2);
+  border:1px solid var(--accent2); font-family:var(--mono); font-size:11px; color:var(--ink)}
+.badge b{width:9px; height:9px; display:inline-block}
+.counts .row{padding:8px 14px; font-size:14px}
+.counts .row b{color:var(--pink); font-family:var(--mono)}
+[data-theme="hacker"] .counts .row b{color:var(--accent2)}
+.tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.tile{aspect-ratio:1; border:1px solid var(--accent2); opacity:.85; transition:.25s;
+  background-size:cover; background-position:center; position:relative}
+.tile:hover{opacity:1; transform:scale(1.03)}
+.tile span{position:absolute; left:0; right:0; bottom:0; padding:4px 6px; font-family:var(--mono);
+  font-size:10px; background:rgba(0,0,0,.55); color:#fff; opacity:0; transition:.2s}
+.tile:hover span{opacity:1}
+.chips{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+.chip{font-family:var(--mono); font-size:11px; padding:5px 12px; cursor:pointer;
+  border:var(--bd); background:var(--panel); color:var(--muted); border-radius:var(--radius)}
+.chip.on{color:var(--hd-ink); background:var(--pink)}
+[data-theme="hacker"] .chip.on{color:#000}
+.score{font-family:var(--mono); color:var(--accent)}
+
+/* ---------- project stack ---------- */
+.stage{overflow:visible}
+.stage > .bd{padding:18px 4px; overflow:visible}
+.stack{position:relative; overflow:visible; transition:height .55s var(--ease)}
+.pol{
+  position:absolute; left:50%; top:16px; width:268px; margin-left:-134px;
+  background:var(--card); color:var(--card-ink); padding:11px 11px 0; cursor:pointer;
+  border:2px solid var(--card-bd); box-shadow:var(--shadow);
+  transform:translate(var(--tx),var(--ty)) rotate(var(--rot));
+  transition:transform .55s var(--ease), box-shadow .3s;
+}
+.pol .shot{height:168px; background-size:cover; background-position:center}
+.pol .cap{font-size:15px; padding:9px 3px 1px; font-weight:700; font-family:var(--mono)}
+.pol .meta{font-family:var(--mono); font-size:11px; opacity:.62; padding:0 3px 4px}
+.pol .note{font-size:12px; opacity:.78; padding:0 3px 12px; line-height:1.4}
+@media (hover:hover){ .pol:hover{box-shadow:0 22px 40px rgba(0,0,0,.6)} }
+
+/* ---------- brick + cheese ---------- */
+#brick{position:absolute; width:124px; z-index:120; cursor:grab; user-select:none;
+  -webkit-user-drag:none; touch-action:none; image-rendering:pixelated;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.5)); animation:bob 3.4s ease-in-out infinite}
+#brick.held{cursor:grabbing; width:140px; animation:none; transform:rotate(-4deg) scale(1.04); image-rendering:auto}
+#brick.eating{animation:chew .28s ease-in-out 6}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes chew{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.95)}}
+.cheese{position:absolute; width:34px; height:30px; z-index:110; cursor:grab; touch-action:none;
+  user-select:none; filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)); transition:transform .2s var(--ease)}
+.cheese:hover{transform:scale(1.15) rotate(-6deg)}
+.cheese.held{cursor:grabbing; transform:scale(1.2)}
+.pop{position:absolute; z-index:130; font-family:var(--mono); font-size:13px; color:var(--accent);
+  pointer-events:none; animation:pop 1s ease-out forwards}
+@keyframes pop{to{transform:translateY(-38px); opacity:0}}
+
+/* ---------- toolbar ---------- */
+.toolbar{position:fixed; left:0; right:0; bottom:0; z-index:150; background:var(--deep);
+  border-top:var(--bd); font-family:var(--mono); font-size:11px; color:var(--muted)}
+.toolbar .in{max-width:var(--wrap); margin:0 auto; padding:9px 20px; display:flex; gap:16px;
+  align-items:center; flex-wrap:wrap}
+.toolbar b{color:var(--ink); font-weight:400}
+.tool{padding:3px 10px; border:1px solid var(--muted); background:transparent; color:var(--muted);
+  font-family:var(--mono); font-size:11px; cursor:pointer}
+.tool:hover{color:var(--ink); border-color:var(--accent)}
+.page{display:none}
+.page.on{display:block}
+
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .pol{width:196px; margin-left:-98px}
+  .pol .shot{height:122px}
+  .pol .note{display:none}
+  #brick{width:100px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+}
