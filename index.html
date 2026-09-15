@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="retro">
+<html lang="en" data-theme="win98" data-chrome="win">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +9,7 @@
 </head>
 <body>
 <div id="wall"></div>
+<div class="desk" id="desk"></div>
 
 <div class="wrap">
 
@@ -28,7 +29,9 @@
     <button class="tab" data-page="gallery">Gallery</button>
     <button class="tab" data-page="about">About</button>
     <div class="themes">
-      <button class="sw on" data-t="retro" title="retro"></button>
+      <button class="sw on" data-t="win98" title="windows 98"></button>
+      <button class="sw" data-t="soft" title="soft blue"></button>
+      <button class="sw" data-t="retro" title="retro"></button>
       <button class="sw" data-t="hacker" title="matrix"></button>
     </div>
   </div>
@@ -60,6 +63,10 @@
 
       <div class="col">
         <div class="show">
+          <div class="hd">elsewhere</div>
+          <div class="bd" id="links" style="font-size:14px"></div>
+        </div>
+        <div class="show">
           <div class="hd">pc specs</div>
           <div class="bd" id="specs"></div>
         </div>
@@ -70,10 +77,6 @@
         <div class="show counts">
           <div class="hd">collection</div>
           <div id="counts"></div>
-        </div>
-        <div class="show">
-          <div class="hd">elsewhere</div>
-          <div class="bd" id="links" style="font-size:14px"></div>
         </div>
       </div>
     </div>
@@ -120,19 +123,27 @@
 
 <div class="toolbar">
   <div class="in">
-    <span>♫ <b id="nowPlaying"></b></span>
-    <span style="opacity:.35">|</span>
-    <span>brick has eaten <b id="cheeseCount2">0</b> cheese</span>
-    <span style="flex:1"></span>
-    <span id="ctx"></span>
-    <span style="opacity:.35">|</span>
-    <span><b id="visits"></b> visits</span>
-    <span style="opacity:.35">|</span>
-    <span id="clock"></span>
+    <button class="start" id="start" aria-expanded="false">
+      <img src="assets/brick-sit.png" alt="" width="20"><span>Start</span>
+    </button>
+    <div class="tasks" id="tasks"></div>
+    <div class="tray">
+      <span id="ctx"></span>
+      <span class="fld">♫ <b id="nowPlaying"></b></span>
+      <span class="fld"><b id="cheeseCount2">0</b> cheese</span>
+      <span class="fld"><b id="visits"></b> visits</span>
+      <span class="fld" id="clock"></span>
+    </div>
   </div>
 </div>
 
+<div class="startmenu" id="startmenu" hidden>
+  <div class="spine">hazeyxd23</div>
+  <div class="items" id="startItems"></div>
+</div>
+
 <script src="js/data.js"></script>
+<script src="js/posts.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
