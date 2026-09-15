@@ -3,19 +3,29 @@
    ============================================================ */
 :root{ --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); }
 
+/* retro — windows 95/98 chrome, drawn in CSS, in this site's palette.
+   the bevel is the whole trick: --lite on the top/left, --dark on the
+   bottom/right makes a face look raised; swap them and it looks pressed
+   into the screen. every button, panel and field below is one of those two. */
 [data-theme="retro"]{
-  --bg:#2b1140; --deep:#1c0a2b;
-  --panel:rgba(28,10,43,.90); --panel2:rgba(95,216,207,.14);
+  --bg:#2b1140; --deep:#200d31;
+  --face:#3f2059;           /* window chrome */
+  --lite:#8258b0;           /* bevel highlight */
+  --dark:#150820;           /* bevel shadow */
+  --well:#1d0a2d;           /* recessed content area */
+  --panel:#3f2059; --panel2:rgba(95,216,207,.14);
   --ink:#f4e6ff; --muted:#b79fd4;
   --accent:#f7e08c; --accent2:#5fd8cf; --pink:#ef7fb6;
   --font:"Segoe UI",system-ui,-apple-system,sans-serif;
   --mono:"Courier New",ui-monospace,monospace;
-  --radius:3px; --bd:2px solid #5fd8cf;
-  --hd-bg:linear-gradient(90deg,#ef7fb6 0%,rgba(239,127,182,.15) 78%,transparent 100%);
+  --radius:0px; --bd:1px solid var(--dark);
+  --hd-bg:linear-gradient(90deg,#ef7fb6 0%,#8a49ad 62%,#4a2468 100%);
   --hd-ink:#2b1140;
-  --shadow:4px 4px 0 rgba(0,0,0,.45);
+  --raise:inset 2px 2px 0 var(--lite), inset -2px -2px 0 var(--dark);
+  --sink:inset 2px 2px 0 var(--dark), inset -2px -2px 0 var(--lite);
+  --shadow:var(--raise), 3px 3px 0 rgba(0,0,0,.45);
   --card:#f6e4f3; --card-ink:#2b1140; --card-bd:rgba(0,0,0,.35);
-  --scrim:rgba(22,7,34,.74);
+  --scrim:transparent;
 }
 [data-theme="hacker"]{
   --bg:#000; --deep:#010601;
@@ -38,12 +48,18 @@ body{
   font-size:15px; line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased;
   transition:background-color .35s,color .35s;
 }
+/* the desktop. no image — a 2px dither checker, the way a 256-colour
+   display faked a solid colour it didn't have. */
 #wall{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:url("../assets/retro-bg.jpg") center/cover no-repeat;
+  background:
+    repeating-conic-gradient(#33164b 0% 25%, #2b1140 0% 50%) 0 0 / 4px 4px;
   transition:opacity .35s;
 }
-#wall::after{content:""; position:absolute; inset:0; background:var(--scrim)}
+#wall::after{
+  content:""; position:absolute; inset:0; background:var(--scrim);
+  box-shadow:inset 0 0 220px rgba(10,2,18,.55);
+}
 [data-theme="hacker"] #wall{opacity:0}
 [data-theme="hacker"] body{text-shadow:0 0 6px rgba(0,255,65,.3)}
 [data-theme="hacker"] body::after{
@@ -171,8 +187,142 @@ a:hover{color:var(--accent2)}
 .page{display:none}
 .page.on{display:block}
 
+/* ---------- blog post pages ---------- */
+.post-wrap{max-width:780px; padding-bottom:70px}
+.post-nav{display:flex; align-items:center; margin-bottom:18px}
+.back{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  padding:9px 18px; border:var(--bd); background:var(--panel); color:var(--muted);
+  border-radius:var(--radius); transition:.2s}
+.back:hover{color:var(--ink); border-color:var(--accent)}
+.post > .bd{padding:30px 34px 36px}
+.post h1{margin:0; font-family:var(--mono); font-size:27px; line-height:1.25;
+  color:var(--accent); letter-spacing:-.01em}
+.post-meta{font-family:var(--mono); font-size:11px; color:var(--muted);
+  letter-spacing:.1em; text-transform:uppercase; margin:10px 0 26px}
+.post-meta .tag{color:var(--accent2)}
+.post .bd > p{margin:0 0 17px; max-width:66ch}
+.post h2,.post h3,.post h4{font-family:var(--mono); color:var(--accent2);
+  margin:32px 0 12px; line-height:1.3}
+.post h2{font-size:19px} .post h3{font-size:17px} .post h4{font-size:14px}
+.post ul,.post ol{margin:0 0 17px; padding-left:22px; max-width:66ch}
+.post li{margin-bottom:6px}
+.post .bd a{text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px}
+.post code{font-family:var(--mono); font-size:.9em; padding:1px 4px;
+  background:var(--panel2); border:1px solid var(--card-bd); border-radius:2px}
+.post pre{margin:0 0 20px; padding:15px 17px; overflow-x:auto; background:var(--deep);
+  border:var(--bd); border-radius:var(--radius); box-shadow:var(--shadow)}
+.post pre code{background:none; border:0; padding:0; font-size:12.5px; line-height:1.55}
+.post blockquote{margin:0 0 20px; padding:2px 0 2px 18px; max-width:66ch;
+  border-left:3px solid var(--pink); color:var(--muted); font-style:italic}
+[data-theme="hacker"] .post blockquote{border-left-color:var(--accent)}
+.post hr{border:0; height:0; border-top:var(--bd); opacity:.5; margin:28px 0}
+.post img{max-width:100%; height:auto; border:var(--bd); border-radius:var(--radius)}
+.post-foot{display:flex; align-items:center; gap:14px; margin-top:22px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase}
+.post-foot img{image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+
+/* ============================================================
+   retro chrome — everything below is windows 95/98 furniture,
+   scoped to [data-theme="retro"] so the hacker theme is untouched.
+   ============================================================ */
+
+/* --- windows --- */
+[data-theme="retro"] .show{border:var(--bd); background:var(--face)}
+[data-theme="retro"] .show > .hd{
+  margin:3px 3px 0; padding:4px 6px 4px 10px; box-shadow:none;
+  font-weight:700; text-shadow:none;
+}
+[data-theme="retro"] .show > .bd{
+  margin:3px; background:var(--well); box-shadow:var(--sink); padding:14px 16px;
+}
+/* panels whose body isn't a .bd (lists, counts, the about pages) */
+[data-theme="retro"] .show > div:not(.hd):not(.bd){
+  margin:3px; background:var(--well); box-shadow:var(--sink);
+}
+[data-theme="retro"] .stage > .bd{background:transparent; box-shadow:none}
+
+/* title-bar buttons: tiny raised squares, like the real ones */
+[data-theme="retro"] .hd .btns b{
+  width:17px; height:15px; background:var(--face); color:var(--ink);
+  border:0; box-shadow:var(--raise); opacity:1; font-size:9px; line-height:1;
+}
+[data-theme="retro"] .hd .btns b:active{box-shadow:var(--sink)}
+[data-theme="retro"] .hd .r{color:#f0dcff; opacity:.85}
+
+/* --- buttons: tabs, chips, tools, swatches, back --- */
+[data-theme="retro"] .tab,
+[data-theme="retro"] .chip,
+[data-theme="retro"] .tool,
+[data-theme="retro"] .sw,
+[data-theme="retro"] .back{
+  background:var(--face); color:var(--muted); border:0;
+  box-shadow:var(--raise); border-radius:0; transition:none;
+}
+[data-theme="retro"] .tab:hover,
+[data-theme="retro"] .chip:hover,
+[data-theme="retro"] .tool:hover,
+[data-theme="retro"] .back:hover{color:var(--ink)}
+[data-theme="retro"] .tab:active,
+[data-theme="retro"] .chip:active,
+[data-theme="retro"] .tool:active,
+[data-theme="retro"] .back:active{box-shadow:var(--sink); padding-top:10px; padding-bottom:8px}
+
+[data-theme="retro"] .tabs{gap:2px; align-items:flex-end}
+[data-theme="retro"] .tab{position:relative; top:3px; padding:8px 20px}
+[data-theme="retro"] .tab.on{
+  top:0; padding:10px 22px 11px; color:var(--ink); background:var(--face);
+  box-shadow:var(--raise), inset 0 3px 0 var(--pink); z-index:3;
+}
+/* the pressed-in look for a selected toggle, plus the classic 50% dither */
+[data-theme="retro"] .chip.on{
+  color:var(--ink); box-shadow:var(--sink);
+  background:
+    repeating-conic-gradient(rgba(239,127,182,.20) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    var(--face);
+}
+[data-theme="retro"] .sw{width:30px; height:26px}
+[data-theme="retro"] .sw.on{box-shadow:var(--sink)}
+[data-theme="retro"] .sw[data-t="retro"]{
+  background:linear-gradient(135deg,#f7e08c,#ef7fb6 55%,#5fd8cf)}
+
+/* --- profile furniture --- */
+[data-theme="retro"] .avatar{
+  background:var(--well); border:var(--bd); box-shadow:var(--sink)}
+[data-theme="retro"] .lvl{background:var(--face); border:var(--bd)}
+
+/* --- status bar --- */
+[data-theme="retro"] .toolbar{
+  background:var(--face); border-top:0; box-shadow:inset 0 2px 0 var(--lite);
+  color:var(--muted);
+}
+[data-theme="retro"] .toolbar .in{gap:5px; padding:5px 20px 6px}
+[data-theme="retro"] .toolbar .in > span[style*="opacity"]{display:none}
+[data-theme="retro"] .toolbar .in > span:not([style]):not(#ctx){
+  padding:3px 9px; box-shadow:var(--sink);
+}
+[data-theme="retro"] .tool{padding:3px 11px}
+
+/* --- misc --- */
+[data-theme="retro"] .badge{border:0; box-shadow:var(--raise); background:var(--face)}
+[data-theme="retro"] .post pre{box-shadow:var(--sink); background:var(--well)}
+[data-theme="retro"] .post code{border:0; box-shadow:var(--sink)}
+[data-theme="retro"] .post > .bd{margin:3px}
+[data-theme="retro"] .post hr{
+  border:0; height:2px; background:var(--dark); box-shadow:0 1px 0 var(--lite)}
+
+/* scrollbars, because it would be a shame not to */
+[data-theme="retro"] ::-webkit-scrollbar{width:17px; height:17px}
+[data-theme="retro"] ::-webkit-scrollbar-track{
+  background:repeating-conic-gradient(#33164b 0% 25%, #2b1140 0% 50%) 0 0 / 4px 4px}
+[data-theme="retro"] ::-webkit-scrollbar-thumb{
+  background:var(--face); box-shadow:var(--raise)}
+[data-theme="retro"] ::-webkit-scrollbar-corner{background:var(--face)}
+
 @media(max-width:860px){
   .grid{grid-template-columns:1fr}
+  .post > .bd{padding:22px 18px 26px}
+  .post h1{font-size:22px}
+  .post > .hd .r{display:none}   /* date is repeated under the title */
   .pol{width:196px; margin-left:-98px}
   .pol .shot{height:122px}
   .pol .note{display:none}
