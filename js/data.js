@@ -31,14 +31,11 @@ window.DATA = {
       note: "pulls data i'm too lazy to copy by hand." }
   ],
 
-  /* ---- Blog ---- */
-  posts: [
-    { title: "why my tcp server ate 4gb of ram",        date: "2026-09-02", tags: ["rust"],          url: "#" },
-    { title: "i switched to hyprland and lost a weekend", date: "2026-08-19", tags: ["linux"],       url: "#" },
-    { title: "notes on writing a lexer by hand",        date: "2026-08-04", tags: ["notes"],         url: "#" },
-    { title: "the cheapest way to cache is to not",     date: "2026-07-28", tags: ["python"],        url: "#" },
-    { title: "hello world",                             date: "2026-07-21", tags: ["notes"],         url: "#" }
-  ],
+  /* ---- Blog ----
+     DON'T EDIT THIS LIST. Posts live in posts/*.md and js/posts.js
+     overwrites this at load time. To add a post: write the markdown
+     file, then run `python3 build.py`. */
+  posts: [],
 
   /* ---- Gallery > photos. drop files in assets/ and set src ---- */
   photos: [
