@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="win98" data-chrome="win">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hello world — hazeyxd23</title>
+<meta name="description" content="the first post, and a working demo of every bit of markdown this blog supports.">
+<link rel="stylesheet" href="../css/style.css">
+<script>
+  /* restore the theme before first paint so post pages don't flash.
+     data-chrome must move with it — see the note at the top of style.css */
+  try {
+    var t = localStorage.getItem('theme'), r = document.documentElement;
+    if (t) { r.dataset.theme = t; r.dataset.chrome = (t === 'hacker') ? 'flat' : 'win'; }
+  } catch (e) {}
+</script>
+</head>
+<body>
+<div id="wall"></div>
+
+<div class="wrap post-wrap">
+
+  <div class="post-nav">
+    <a class="back" href="../index.html">&larr; hazeyxd23</a>
+    <div class="themes">
+      <button class="sw" data-t="win98" title="windows 98"></button>
+      <button class="sw" data-t="soft" title="soft blue"></button>
+      <button class="sw" data-t="retro" title="retro"></button>
+      <button class="sw" data-t="hacker" title="matrix"></button>
+    </div>
+  </div>
+
+  <article class="show post">
+    <div class="hd">post <span class="r">2026-07-21</span><span class="btns"><b>_</b><b>&#9633;</b><b>&times;</b></span></div>
+    <div class="bd">
+      <h1>hello world</h1>
+      <div class="post-meta">2026-07-21 · <span class='tag'>notes</span></div>
+      <p>This is a starter post. <strong>Rewrite it or delete it</strong> — it exists so you can see the pipeline working end to end, and so there is one real page to check the styling against. Everything below is here to exercise the renderer.</p>
+<h3>what this blog is</h3>
+<p>Posts are markdown files in <code>posts/</code>. You write one, run <code>python3 build.py</code>, and it becomes a page in <code>blog/</code> plus an entry in the listing on the Blog tab. There is no database, no framework, and nothing to deploy beyond the folder itself.</p>
+<p>The filename sets the URL. A leading date is stripped, so this file:</p>
+<pre><code>posts/2026-07-21-hello-world.md</code></pre>
+<p>becomes <code>blog/hello-world.html</code>.</p>
+<h3>what the renderer handles</h3>
+<p>Inline: <strong>bold</strong>, <em>italic</em>, <code>inline code</code>, and <a href="https://github.com/hazeyxd23">links</a>.</p>
+<p>Lists, both kinds:</p>
+<ul><li>unordered items</li><li>with <code>code</code> and <strong>bold</strong> inside them</li><li>as many as you like</li></ul>
+<ol><li>ordered items</li><li>counted for you</li><li>so renumbering is free</li></ol>
+<p>Code blocks keep their whitespace and get a language class:</p>
+<pre><code class="lang-python">def feed(brick, cheese):
+    &quot;&quot;&quot;the only function that matters&quot;&quot;&quot;
+    brick.fed += 1
+    return &quot;nom!&quot;</code></pre>
+<blockquote>Blockquotes work too. Useful for pulling out the one line someone else wrote that made you go and change your code.</blockquote>
+<hr>
+<h3>adding the next one</h3>
+<p>Copy this file, change the frontmatter, write. Set <code>draft: true</code> while it&#x27;s not ready and the build will skip it entirely — no half-finished page goes live, and it stays out of the listing.</p>
+    </div>
+  </article>
+
+  <div class="post-foot">
+    <img src="../assets/brick-sit.png" alt="brick the mouse" width="64">
+    <a href="../index.html#blog">more posts</a>
+  </div>
+
+</div>
+
+<script>
+  var root = document.documentElement;
+  document.querySelectorAll('.sw').forEach(function (b) {
+    b.classList.toggle('on', b.dataset.t === root.dataset.theme);
+    b.onclick = function () {
+      var t = b.dataset.t;
+      root.dataset.theme = t;
+      root.dataset.chrome = (t === 'hacker') ? 'flat' : 'win';
+      try { localStorage.setItem('theme', t); } catch (e) {}
+      document.querySelectorAll('.sw').forEach(function (x) { x.classList.toggle('on', x === b); });
+    };
+  });
+</script>
+</body>
+</html>
