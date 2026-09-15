@@ -1,7 +1,92 @@
 /* ============================================================
-   hazeyxd23 — two themes: retro (default) and hacker
+   hazeyxd23 — four themes.
+
+     win98   grey chrome, teal desktop, navy title bars   (default)
+     soft    pale blue chrome, blue mesh desktop, cream title bars
+     retro   purple chrome, purple mesh desktop, pink title bars
+     hacker  flat green-on-black — the deliberate outlier
+
+   The first three are STRUCTURALLY IDENTICAL. They all carry
+   data-chrome="win" and share one block of window furniture near the bottom
+   of this file — same bevels, same square corners, same tabs, same taskbar.
+   A theme is nothing but its variable block; matrix is the only one that
+   opts out (data-chrome="flat") and uses the plain styles above the block.
+   Adding a theme means writing variables and picking a chrome, not copying
+   selectors. app.js keeps the attribute in sync, and index.html / the post
+   template set it up front so nothing flashes.
    ============================================================ */
-:root{ --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); }
+:root{
+  --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); --taskbar:46px;
+  --dither:rgba(255,255,255,.05);   /* the 4px checker over the desktop */
+  --mesh:none;                      /* optional gradient under it */
+  /* every theme defines these; the transparent fallback keeps a shared
+     `box-shadow: var(--raise), …` valid if one ever forgets */
+  --raise:0 0 0 0 transparent;
+  --sink:0 0 0 0 transparent;
+}
+
+/* win98 — the default. grey chrome, teal desktop, navy title bars.
+   shares every chrome rule with `retro` (see the block near the bottom);
+   only the variables below differ. */
+[data-theme="win98"]{
+  --bg:#008080; --deep:#c0c0c0;
+  --face:#c0c0c0;
+  --lite:#ffffff;
+  --dark:#5a5a5a;
+  --well:#ffffff;
+  --panel:#c0c0c0; --panel2:#d8d8d8;
+  --ink:#0d0d0d; --muted:#4a4a4a;
+  --accent:#000080; --accent2:#00457a; --pink:#000080;
+  --font:"Segoe UI",Tahoma,system-ui,sans-serif;
+  --mono:"Lucida Console","Courier New",ui-monospace,monospace;
+  --radius:0px; --bd:1px solid #0d0d0d;
+  --hd-bg:linear-gradient(90deg,#000080 0%,#1084d0 100%);
+  --hd-ink:#ffffff;
+  --raise:inset 2px 2px 0 var(--lite), inset -2px -2px 0 var(--dark);
+  --sink:inset 2px 2px 0 var(--dark), inset -2px -2px 0 var(--lite);
+  --shadow:var(--raise), 2px 2px 0 rgba(0,0,0,.35);
+  --card:#ffffff; --card-ink:#0d0d0d; --card-bd:#5a5a5a;
+  --press:rgba(0,0,0,.16);
+  --scrim:transparent;
+}
+
+/* soft — the blue one. Structurally identical to win98 and retro: same
+   data-chrome="win" furniture, same square corners, same 2px bevels. Only the
+   palette differs — a pale blue chrome, cream title bars and red links instead
+   of grey/navy or purple/pink. */
+[data-theme="soft"]{
+  --bg:#2f62a8; --deep:#dbe6f2;
+  --mesh:
+    radial-gradient(58% 48% at 10% 4%,  #66c6bd 0%, transparent 62%),
+    radial-gradient(64% 54% at 88% 2%,  #63a6ec 0%, transparent 60%),
+    radial-gradient(76% 66% at 98% 98%, #2a52a0 0%, transparent 66%),
+    radial-gradient(70% 60% at 6% 96%,  #3f74c4 0%, transparent 64%),
+    linear-gradient(160deg,#3d79c2,#27508f);
+  --face:#dbe6f2;           /* window chrome */
+  --lite:#ffffff;           /* bevel highlight */
+  --dark:#7b94b4;           /* bevel shadow */
+  --well:#ffffff;           /* recessed content area */
+  --panel:#dbe6f2; --panel2:#eaf1f9;
+  --ink:#22303f; --muted:#5f7391;
+  --accent:#d43c26; --accent2:#9a48c9; --pink:#d43c26;
+  --font:"Segoe UI",Tahoma,system-ui,sans-serif;
+  --mono:"Courier New",ui-monospace,monospace;
+  --radius:0px; --bd:1px solid #22303f;
+  --hd-bg:linear-gradient(90deg,#f6d79b 0%,#fbeccd 58%,#fdf7ec 100%);
+  --hd-ink:#5e4a2c;
+  --raise:inset 2px 2px 0 var(--lite), inset -2px -2px 0 var(--dark);
+  --sink:inset 2px 2px 0 var(--dark), inset -2px -2px 0 var(--lite);
+  --shadow:var(--raise), 2px 2px 0 rgba(10,30,60,.30);
+  --card:#ffffff; --card-ink:#22303f; --card-bd:#7b94b4;
+  --press:rgba(212,60,38,.16);
+  --scrim:transparent;
+}
+/* the profile sits straight on the blue desktop rather than in a panel, so it
+   needs light ink — nothing to do with the chrome */
+[data-theme="soft"] .who h1{color:#ff8ec8}
+[data-theme="soft"] .who p{color:#e6eefb}
+[data-theme="soft"] .status{color:#ffb3a3}
+[data-theme="soft"] .status i{background:#ffb3a3}
 
 /* retro — windows 95/98 chrome, drawn in CSS, in this site's palette.
    the bevel is the whole trick: --lite on the top/left, --dark on the
@@ -9,6 +94,13 @@
    into the screen. every button, panel and field below is one of those two. */
 [data-theme="retro"]{
   --bg:#2b1140; --deep:#200d31;
+  --mesh:
+    radial-gradient(58% 48% at 8% 4%,   #52246f 0%, transparent 62%),
+    radial-gradient(62% 52% at 92% 6%,  #7c2a80 0%, transparent 60%),
+    radial-gradient(78% 68% at 70% 98%, #1e2a6b 0%, transparent 66%),
+    radial-gradient(60% 55% at 4% 92%,  #3a1a5c 0%, transparent 62%),
+    linear-gradient(160deg,#35174f,#210e34);
+  --dither:rgba(255,255,255,.055);
   --face:#3f2059;           /* window chrome */
   --lite:#8258b0;           /* bevel highlight */
   --dark:#150820;           /* bevel shadow */
@@ -25,6 +117,7 @@
   --sink:inset 2px 2px 0 var(--dark), inset -2px -2px 0 var(--lite);
   --shadow:var(--raise), 3px 3px 0 rgba(0,0,0,.45);
   --card:#f6e4f3; --card-ink:#2b1140; --card-bd:rgba(0,0,0,.35);
+  --press:rgba(239,127,182,.20);
   --scrim:transparent;
 }
 [data-theme="hacker"]{
@@ -48,17 +141,21 @@ body{
   font-size:15px; line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased;
   transition:background-color .35s,color .35s;
 }
-/* the desktop. no image — a 2px dither checker, the way a 256-colour
-   display faked a solid colour it didn't have. */
+/* the desktop: a 4px dither checker — the way a 256-colour display faked a
+   colour it didn't have — laid over an optional mesh gradient, over the base
+   colour. The checker is translucent, so one rule works for every theme;
+   a theme picks its look with --mesh and --dither alone. */
 #wall{
   position:fixed; inset:0; z-index:0; pointer-events:none;
   background:
-    repeating-conic-gradient(#33164b 0% 25%, #2b1140 0% 50%) 0 0 / 4px 4px;
+    repeating-conic-gradient(var(--dither) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    var(--mesh),
+    var(--bg);
   transition:opacity .35s;
 }
 #wall::after{
   content:""; position:absolute; inset:0; background:var(--scrim);
-  box-shadow:inset 0 0 220px rgba(10,2,18,.55);
+  box-shadow:inset 0 0 240px rgba(6,10,26,.38);
 }
 [data-theme="hacker"] #wall{opacity:0}
 [data-theme="hacker"] body{text-shadow:0 0 6px rgba(0,255,65,.3)}
@@ -68,7 +165,8 @@ body{
 }
 a{color:var(--accent); text-decoration:none}
 a:hover{color:var(--accent2)}
-.wrap{max-width:var(--wrap); margin:0 auto; padding:26px 20px 96px; position:relative; z-index:2}
+.wrap{max-width:var(--wrap); margin:0 auto; position:relative; z-index:2;
+  padding:26px 20px calc(var(--taskbar) + 64px)}
 
 /* ---------- profile ---------- */
 .profile{display:flex; gap:22px; align-items:flex-start; margin-bottom:22px; flex-wrap:wrap}
@@ -99,6 +197,8 @@ a:hover{color:var(--accent2)}
 .sw{width:28px; height:28px; border:var(--bd); cursor:pointer; opacity:.5; transition:.2s}
 .sw:hover{opacity:.8}
 .sw.on{opacity:1; box-shadow:0 0 0 2px var(--accent)}
+.sw[data-t="win98"]{background:linear-gradient(135deg,#c0c0c0 0 48%,#000080 48%)}
+.sw[data-t="soft"]{background:linear-gradient(135deg,#66c6bd,#3d79c2 55%,#27508f)}
 .sw[data-t="retro"]{background:linear-gradient(135deg,#f7e08c,#ef7fb6 55%,#5fd8cf)}
 .sw[data-t="hacker"]{background:linear-gradient(135deg,#00ff41,#000)}
 
@@ -108,7 +208,7 @@ a:hover{color:var(--accent2)}
 .show{border-radius:var(--radius); overflow:hidden; background:var(--panel); border:var(--bd); box-shadow:var(--shadow)}
 .show > .hd{padding:8px 14px; font-family:var(--mono); font-size:11px; letter-spacing:.15em;
   text-transform:uppercase; color:var(--hd-ink); background:var(--hd-bg);
-  display:flex; align-items:center; gap:10px}
+  display:flex; align-items:center; gap:10px; user-select:none}
 [data-theme="hacker"] .show > .hd{color:var(--ink)}
 .hd .r{margin-left:auto; color:var(--hd-ink); opacity:.7; letter-spacing:.04em; text-transform:none}
 [data-theme="hacker"] .hd .r{color:var(--muted); opacity:1}
@@ -159,17 +259,47 @@ a:hover{color:var(--accent2)}
 .pol .note{font-size:12px; opacity:.78; padding:0 3px 12px; line-height:1.4}
 @media (hover:hover){ .pol:hover{box-shadow:0 22px 40px rgba(0,0,0,.6)} }
 
+/* ---------- expanded project view ----------
+   clicking the stack grows the window itself. It's already absolutely
+   positioned while floating, so left/top/width/height are inline values a
+   transition can animate — no position-type change and no scaling, which is
+   what keeps the content from distorting mid-flight. */
+.show.anim{transition:left .45s var(--ease), top .45s var(--ease),
+           width .45s var(--ease), height .45s var(--ease)}
+.show.expanded{z-index:140; display:flex; flex-direction:column}
+body.zoomed .wrap{z-index:135}
+.show.expanded > .bd{flex:1; min-height:0; overflow:auto}
+.show.expanded .pol{cursor:pointer}
+@media (hover:hover){
+  .show.expanded .pol:hover{
+    box-shadow:0 26px 46px rgba(0,0,0,.55);
+    transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(1.03);
+  }
+}
+.backstack{
+  display:none; margin:0 0 18px; padding:13px 28px; cursor:pointer;
+  font-family:var(--mono); font-size:14px; letter-spacing:.08em;
+  color:var(--ink); background:var(--face); border:var(--bd);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+}
+.show.expanded .backstack{display:inline-block}
+.backstack:hover{color:var(--accent)}
+[data-chrome="win"] .backstack{border-color:transparent; box-shadow:var(--raise)}
+[data-chrome="win"] .backstack:active{box-shadow:var(--sink)}
+
 /* ---------- brick + cheese ---------- */
-#brick{position:absolute; width:124px; z-index:120; cursor:grab; user-select:none;
+#brick{position:absolute; width:112px; z-index:120; cursor:grab; user-select:none;
   -webkit-user-drag:none; touch-action:none; image-rendering:pixelated;
   filter:drop-shadow(0 8px 14px rgba(0,0,0,.5)); animation:bob 3.4s ease-in-out infinite}
-#brick.held{cursor:grabbing; width:140px; animation:none; transform:rotate(-4deg) scale(1.04); image-rendering:auto}
+#brick.held{cursor:grabbing; width:126px; animation:none; transform:rotate(-4deg) scale(1.04); image-rendering:auto}
 #brick.eating{animation:chew .28s ease-in-out 6}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes chew{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.95)}}
-.cheese{position:absolute; width:34px; height:30px; z-index:110; cursor:grab; touch-action:none;
+.cheese{position:absolute; width:40px; height:34px; z-index:110; cursor:grab; touch-action:none;
   user-select:none; filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)); transition:transform .2s var(--ease)}
 .cheese:hover{transform:scale(1.15) rotate(-6deg)}
+@keyframes cut{from{transform:scale(.4) rotate(-25deg); opacity:0}}
+.cheese.fresh{animation:cut .32s var(--ease)}
 .cheese.held{cursor:grabbing; transform:scale(1.2)}
 .pop{position:absolute; z-index:130; font-family:var(--mono); font-size:13px; color:var(--accent);
   pointer-events:none; animation:pop 1s ease-out forwards}
@@ -178,8 +308,8 @@ a:hover{color:var(--accent2)}
 /* ---------- toolbar ---------- */
 .toolbar{position:fixed; left:0; right:0; bottom:0; z-index:150; background:var(--deep);
   border-top:var(--bd); font-family:var(--mono); font-size:11px; color:var(--muted)}
-.toolbar .in{max-width:var(--wrap); margin:0 auto; padding:9px 20px; display:flex; gap:16px;
-  align-items:center; flex-wrap:wrap}
+.toolbar .in{display:flex; align-items:center; gap:6px; flex-wrap:nowrap;
+  padding:5px 7px; min-height:var(--taskbar)}
 .toolbar b{color:var(--ink); font-weight:400}
 .tool{padding:3px 10px; border:1px solid var(--muted); background:transparent; color:var(--muted);
   font-family:var(--mono); font-size:11px; cursor:pointer}
@@ -222,110 +352,269 @@ a:hover{color:var(--accent2)}
 .post-foot img{image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
 
 /* ============================================================
-   retro chrome — everything below is windows 95/98 furniture,
-   scoped to [data-theme="retro"] so the hacker theme is untouched.
+   win98 + retro chrome — shared windows 95/98 furniture. both themes use
+   these rules; only their colour variables differ.
+   scoped to [data-chrome="win"] so the hacker theme is untouched.
    ============================================================ */
 
 /* --- windows --- */
-[data-theme="retro"] .show{border:var(--bd); background:var(--face)}
-[data-theme="retro"] .show > .hd{
+[data-chrome="win"] .show{border:var(--bd); background:var(--face)}
+[data-chrome="win"] .show > .hd{
   margin:3px 3px 0; padding:4px 6px 4px 10px; box-shadow:none;
   font-weight:700; text-shadow:none;
 }
-[data-theme="retro"] .show > .bd{
+[data-chrome="win"] .show > .bd{
   margin:3px; background:var(--well); box-shadow:var(--sink); padding:14px 16px;
 }
 /* panels whose body isn't a .bd (lists, counts, the about pages) */
-[data-theme="retro"] .show > div:not(.hd):not(.bd){
+[data-chrome="win"] .show > div:not(.hd):not(.bd){
   margin:3px; background:var(--well); box-shadow:var(--sink);
 }
-[data-theme="retro"] .stage > .bd{background:transparent; box-shadow:none}
+[data-chrome="win"] .stage > .bd{background:transparent; box-shadow:none}
+/* gallery renders a .bd *inside* that generic div — don't sink it twice */
+[data-chrome="win"] .show > div:not(.hd):not(.bd) > .bd{
+  background:transparent; box-shadow:none; margin:0;
+}
 
 /* title-bar buttons: tiny raised squares, like the real ones */
-[data-theme="retro"] .hd .btns b{
+[data-chrome="win"] .hd .btns b{
   width:17px; height:15px; background:var(--face); color:var(--ink);
   border:0; box-shadow:var(--raise); opacity:1; font-size:9px; line-height:1;
 }
-[data-theme="retro"] .hd .btns b:active{box-shadow:var(--sink)}
-[data-theme="retro"] .hd .r{color:#f0dcff; opacity:.85}
+[data-chrome="win"] .hd .btns b:active{box-shadow:var(--sink)}
+[data-chrome="win"] .hd .r{color:var(--hd-ink); opacity:.8}
 
 /* --- buttons: tabs, chips, tools, swatches, back --- */
-[data-theme="retro"] .tab,
-[data-theme="retro"] .chip,
-[data-theme="retro"] .tool,
-[data-theme="retro"] .sw,
-[data-theme="retro"] .back{
+[data-chrome="win"] .chip,
+[data-chrome="win"] .tool,
+[data-chrome="win"] .sw,
+[data-chrome="win"] .back{
   background:var(--face); color:var(--muted); border:0;
   box-shadow:var(--raise); border-radius:0; transition:none;
 }
-[data-theme="retro"] .tab:hover,
-[data-theme="retro"] .chip:hover,
-[data-theme="retro"] .tool:hover,
-[data-theme="retro"] .back:hover{color:var(--ink)}
-[data-theme="retro"] .tab:active,
-[data-theme="retro"] .chip:active,
-[data-theme="retro"] .tool:active,
-[data-theme="retro"] .back:active{box-shadow:var(--sink); padding-top:10px; padding-bottom:8px}
+[data-chrome="win"] .chip:hover,
+[data-chrome="win"] .tool:hover,
+[data-chrome="win"] .back:hover{color:var(--ink)}
+[data-chrome="win"] .chip:active,
+[data-chrome="win"] .tool:active,
+[data-chrome="win"] .back:active{box-shadow:var(--sink); padding-top:10px; padding-bottom:8px}
 
-[data-theme="retro"] .tabs{gap:2px; align-items:flex-end}
-[data-theme="retro"] .tab{position:relative; top:3px; padding:8px 20px}
-[data-theme="retro"] .tab.on{
+/* tabs, like everything else in this block: matrix keeps its flat bordered
+   row, every other theme gets the windows 98 shape in its own colours */
+[data-chrome="win"] .tabs{gap:2px; align-items:flex-end}
+[data-chrome="win"] .tab{
+  position:relative; top:3px; padding:8px 20px; border:0; border-radius:0;
+  transition:none; background:var(--face); color:var(--muted);
+  box-shadow:var(--raise);
+}
+[data-chrome="win"] .tab:hover{color:var(--ink)}
+[data-chrome="win"] .tab:active{box-shadow:var(--sink)}
+[data-chrome="win"] .tab.on{
   top:0; padding:10px 22px 11px; color:var(--ink); background:var(--face);
-  box-shadow:var(--raise), inset 0 3px 0 var(--pink); z-index:3;
+  box-shadow:var(--raise), inset 0 3px 0 var(--pink);
+  z-index:3;
 }
 /* the pressed-in look for a selected toggle, plus the classic 50% dither */
-[data-theme="retro"] .chip.on{
+[data-chrome="win"] .chip.on{
   color:var(--ink); box-shadow:var(--sink);
   background:
-    repeating-conic-gradient(rgba(239,127,182,.20) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    repeating-conic-gradient(var(--press) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
     var(--face);
 }
-[data-theme="retro"] .sw{width:30px; height:26px}
-[data-theme="retro"] .sw.on{box-shadow:var(--sink)}
-[data-theme="retro"] .sw[data-t="retro"]{
+[data-chrome="win"] .sw{width:30px; height:26px; opacity:1}
+[data-chrome="win"] .sw.on{box-shadow:var(--sink)}
+/* the .sw rule above sets a flat face on every swatch — put the
+   two previews back, or the theme picker turns into blank buttons */
+[data-chrome="win"] .sw[data-t="retro"]{
   background:linear-gradient(135deg,#f7e08c,#ef7fb6 55%,#5fd8cf)}
+[data-chrome="win"] .sw[data-t="hacker"]{
+  background:linear-gradient(135deg,#00ff41,#000)}
+[data-chrome="win"] .sw[data-t="win98"]{
+  background:linear-gradient(135deg,#c0c0c0 0 48%,#000080 48%)}
+[data-chrome="win"] .sw[data-t="soft"]{
+  background:linear-gradient(135deg,#66c6bd,#3d79c2 55%,#27508f)}
+[data-chrome="win"] .tile{border:0; box-shadow:var(--sink)}
+
+/* the profile text sits straight on the desktop with no panel behind it,
+   and win98's accent is too close to the teal to read there */
+[data-theme="win98"] .status{color:var(--ink)}
+[data-theme="win98"] .status i{background:#000080}
 
 /* --- profile furniture --- */
-[data-theme="retro"] .avatar{
+[data-chrome="win"] .avatar{
   background:var(--well); border:var(--bd); box-shadow:var(--sink)}
-[data-theme="retro"] .lvl{background:var(--face); border:var(--bd)}
+[data-chrome="win"] .lvl{background:var(--face); border:var(--bd)}
 
 /* --- status bar --- */
-[data-theme="retro"] .toolbar{
+[data-chrome="win"] .toolbar{
   background:var(--face); border-top:0; box-shadow:inset 0 2px 0 var(--lite);
   color:var(--muted);
 }
-[data-theme="retro"] .toolbar .in{gap:5px; padding:5px 20px 6px}
-[data-theme="retro"] .toolbar .in > span[style*="opacity"]{display:none}
-[data-theme="retro"] .toolbar .in > span:not([style]):not(#ctx){
-  padding:3px 9px; box-shadow:var(--sink);
-}
-[data-theme="retro"] .tool{padding:3px 11px}
+[data-chrome="win"] .fld{border-color:transparent; box-shadow:var(--sink)}
+[data-chrome="win"] .tool{padding:3px 11px}
 
 /* --- misc --- */
-[data-theme="retro"] .badge{border:0; box-shadow:var(--raise); background:var(--face)}
-[data-theme="retro"] .post pre{box-shadow:var(--sink); background:var(--well)}
-[data-theme="retro"] .post code{border:0; box-shadow:var(--sink)}
-[data-theme="retro"] .post > .bd{margin:3px}
-[data-theme="retro"] .post hr{
+[data-chrome="win"] .badge{border:0; box-shadow:var(--raise); background:var(--face)}
+[data-chrome="win"] .post pre{box-shadow:var(--sink); background:var(--well)}
+/* a sunken bevel on something this small reads as an underline, so inline
+   code gets a flat recess instead — and code *inside* pre gets nothing,
+   or every line of a code block picks up the bevel's bottom edge */
+[data-chrome="win"] .post :not(pre) > code{
+  border:1px solid var(--dark); background:var(--well); box-shadow:none}
+[data-chrome="win"] .post pre code{border:0; background:none; box-shadow:none}
+[data-chrome="win"] .post > .bd{margin:3px}
+[data-chrome="win"] .post hr{
   border:0; height:2px; background:var(--dark); box-shadow:0 1px 0 var(--lite)}
 
 /* scrollbars, because it would be a shame not to */
-[data-theme="retro"] ::-webkit-scrollbar{width:17px; height:17px}
-[data-theme="retro"] ::-webkit-scrollbar-track{
-  background:repeating-conic-gradient(#33164b 0% 25%, #2b1140 0% 50%) 0 0 / 4px 4px}
-[data-theme="retro"] ::-webkit-scrollbar-thumb{
+[data-chrome="win"] ::-webkit-scrollbar{width:17px; height:17px}
+[data-chrome="win"] ::-webkit-scrollbar-track{
+  background:
+    repeating-conic-gradient(var(--dither) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    var(--bg)}
+[data-chrome="win"] ::-webkit-scrollbar-thumb{
   background:var(--face); box-shadow:var(--raise)}
-[data-theme="retro"] ::-webkit-scrollbar-corner{background:var(--face)}
+[data-chrome="win"] ::-webkit-scrollbar-corner{background:var(--face)}
+
+/* ============================================================
+   window manager — drag, minimise, maximise, close.
+   a dragged window goes position:absolute and a placeholder of the same
+   size takes its slot in the grid, so nothing else on the page reflows.
+   ============================================================ */
+.wm .show > .hd{cursor:move; touch-action:none}
+.wm .hd .btns b{cursor:pointer}
+.wm .hd .btns b:hover{filter:brightness(1.18)}
+
+.show.float{position:absolute; z-index:60; margin:0 !important}
+.show.dragging{opacity:.95}
+.ph{visibility:hidden; pointer-events:none}
+.show.max{
+  position:fixed; z-index:80; left:8px; right:8px; top:8px;
+  bottom:calc(var(--taskbar) + 10px); width:auto !important; overflow:auto;
+}
+.show.min{display:none}
+
+/* ---------- taskbar ---------- */
+.start{display:flex; align-items:center; gap:8px; padding:6px 16px 6px 9px; cursor:pointer;
+  font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink);
+  background:var(--panel); border:var(--bd); flex:none}
+.start img{image-rendering:pixelated; display:block; width:26px}
+.tasks{display:flex; gap:5px; flex:1; min-width:0; overflow:hidden}
+.task{flex:0 1 178px; min-width:54px; padding:7px 12px; cursor:pointer; text-align:left;
+  font-family:var(--mono); font-size:12px; color:var(--ink); background:var(--panel);
+  border:var(--bd); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.task.isMin{color:var(--muted)}
+.tray{display:flex; gap:6px; align-items:center; flex:none}
+.tray .fld{white-space:nowrap; padding:4px 10px; border:var(--bd);
+  border-radius:var(--radius); background:var(--panel)}
+
+[data-chrome="win"] .start,
+[data-chrome="win"] .task{
+  border-color:transparent; box-shadow:var(--raise); background:var(--face)}
+[data-chrome="win"] .start:active,
+[data-chrome="win"] .start[aria-expanded="true"],
+[data-chrome="win"] .task.active{box-shadow:var(--sink)}
+[data-chrome="win"] .task.active{
+  background:
+    repeating-conic-gradient(var(--press) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    var(--face)}
+[data-theme="hacker"] .task.active{background:var(--panel2); color:var(--accent2)}
+
+/* ---------- start menu ---------- */
+.startmenu{position:fixed; left:7px; bottom:calc(var(--taskbar) + 5px); z-index:160;
+  display:flex; min-width:290px; background:var(--panel); border:var(--bd);
+  box-shadow:var(--shadow)}
+/* display:flex above would beat the UA rule for [hidden], so say it again */
+.startmenu[hidden]{display:none}
+.startmenu .spine{flex:none; width:34px; writing-mode:vertical-rl; transform:rotate(180deg);
+  display:grid; place-items:center; font-family:var(--mono); font-size:17px; font-weight:700;
+  letter-spacing:.18em; color:var(--hd-ink); background:var(--hd-bg)}
+.startmenu .items{flex:1; padding:5px; display:flex; flex-direction:column; min-width:0}
+.startmenu button{display:block; width:100%; text-align:left; padding:10px 15px; cursor:pointer;
+  font-family:var(--mono); font-size:13.5px; color:var(--ink); background:none; border:0}
+.startmenu button:hover{background:var(--hd-bg); color:var(--hd-ink)}
+.startmenu hr{border:0; height:2px; margin:5px 3px; background:var(--dark); box-shadow:0 1px 0 var(--lite)}
+.startmenu .cap{padding:9px 15px 4px; font-family:var(--mono); font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+
+/* ---------- desktop icons ----------
+   one per window, free to sit anywhere on the desktop. The layer covers the
+   whole viewport behind the page; .wrap is pointer-events:none so clicks in
+   its empty areas reach an icon underneath, and its real content opts back
+   in. Without that, .wrap has no background but still swallows every click
+   across its box, and any icon under it would be silently dead. */
+.desk{display:none}
+@media(min-width:860px){
+  body{padding-left:112px}                /* where icons land by default */
+  .desk{position:fixed; inset:0; bottom:var(--taskbar); z-index:1;
+    display:block; pointer-events:none; overflow:hidden}
+  .wrap{pointer-events:none}
+  .wrap > *{pointer-events:auto}
+  .wrap > .page{pointer-events:none}
+  .wrap .page .show, .wrap .page .chips{pointer-events:auto}
+}
+.ico{position:absolute; pointer-events:auto; width:106px; padding:9px 4px 7px;
+  cursor:pointer; background:none; border:0; display:flex; flex-direction:column;
+  align-items:center; gap:6px; touch-action:none}
+.ico svg{width:51px; height:51px; display:block;
+  filter:drop-shadow(1px 2px 0 rgba(0,0,0,.45))}
+.ico .l{font-family:var(--mono); font-size:11.5px; line-height:1.3; color:#fff;
+  text-align:center; overflow-wrap:anywhere; padding:1px 4px;
+  text-shadow:1px 1px 0 rgba(0,0,0,.85)}
+.ico:hover .l{text-decoration:underline}
+.ico.sel .l{background:#000080; color:#fff; text-shadow:none}
+.ico.sel svg{filter:drop-shadow(0 0 0 #000080) saturate(.5) brightness(.9)}
+.ico.open svg{opacity:.74}
+.ico.open .l{opacity:.9}
+.ico.dragging{opacity:.75; z-index:5}
+.ico.block svg{width:58px; height:58px}
+.ico.block:active svg{transform:translateY(2px)}
+[data-theme="hacker"] .ico.sel .l{background:var(--accent); color:#000}
+
+/* ---------- hints ----------
+   two callouts that point at the things nobody discovers on their own.
+   each one disappears for good the first time you use what it points at. */
+.hint{position:absolute; z-index:130; pointer-events:auto; cursor:pointer;
+  padding:6px 11px; font-family:var(--mono); font-size:11px; line-height:1.3;
+  color:#141414; background:#ffffe1; border:1px solid #000;
+  box-shadow:2px 2px 0 rgba(0,0,0,.45); animation:hintbob 2.2s ease-in-out infinite}
+.hint::after{content:""; position:absolute; width:9px; height:9px; background:#ffffe1;
+  border-right:1px solid #000; border-bottom:1px solid #000}
+/* "right"/"left" name the side the arrow sticks out of, i.e. the
+   direction of the thing being pointed at */
+.hint[data-dir="right"]::after{right:-5px; top:50%; margin-top:-5px; transform:rotate(-45deg)}
+.hint[data-dir="left"]::after{left:-5px; top:50%; margin-top:-5px; transform:rotate(135deg)}
+.hint b{font-weight:700}
+@keyframes hintbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media(prefers-reduced-motion:reduce){ .hint{animation:none} }
+
+/* ---------- right-click menu ---------- */
+.ctxmenu{position:fixed; z-index:170; min-width:186px; padding:4px;
+  background:var(--panel); border:var(--bd); box-shadow:var(--shadow)}
+.ctxmenu[hidden]{display:none}
+.ctxmenu button{display:block; width:100%; text-align:left; padding:7px 14px 7px 26px;
+  position:relative; cursor:pointer; font-family:var(--mono); font-size:12px;
+  color:var(--ink); background:none; border:0; white-space:nowrap}
+.ctxmenu button:hover{background:var(--hd-bg); color:var(--hd-ink)}
+.ctxmenu button.tick::before{content:"\2713"; position:absolute; left:9px}
+.ctxmenu hr{border:0; height:2px; margin:4px 2px; background:var(--dark);
+  box-shadow:0 1px 0 var(--lite)}
 
 @media(max-width:860px){
   .grid{grid-template-columns:1fr}
+  /* dragging windows around a phone screen is a trap — pin them back down */
+  .show.float{position:static !important; width:auto !important}
+  .show.max{position:static; width:auto !important}
+  .ph{display:none}
+  .tray .fld:not(#clock){display:none}
+  .task{flex:0 1 108px}
   .post > .bd{padding:22px 18px 26px}
   .post h1{font-size:22px}
   .post > .hd .r{display:none}   /* date is repeated under the title */
+  .stage > .hd .r{display:none}  /* "hover to fan" means nothing on touch */
   .pol{width:196px; margin-left:-98px}
   .pol .shot{height:122px}
   .pol .note{display:none}
-  #brick{width:100px}
+  #brick{width:90px}
   .tiles{grid-template-columns:repeat(2,1fr)}
 }
