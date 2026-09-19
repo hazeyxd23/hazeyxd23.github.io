@@ -1,63 +1,164 @@
-# hazeyxd23.dev
+# hazeyxd23.github.io
 
-Personal site. Plain HTML, CSS and JavaScript — no framework, no build step, no dependencies.
+My personal site, built as a little desktop operating system you can poke at.
 
-```
-index.html          structure only
-css/style.css       both themes live here, as CSS variables
-js/data.js          ← all your content. this is the file you edit
-js/app.js           rendering + brick + cheese. rarely needs touching
-assets/             brick sprites + retro wallpaper
-build.py            optional: bundles everything into one file
-```
+**Live:** https://hazeyxd23.github.io
 
-## Running it
+![Four themes of the site: windows 98, soft blue, retro and matrix](preview.png)
 
-Open `index.html` in a browser. That's it.
+Plain HTML, CSS and JavaScript. No framework, no build tooling, no
+dependencies — the only build step is a Python script that turns markdown into
+blog pages, and it's standard library only.
 
-If you want the sprites to load reliably over `file://`, serve it instead:
+## Why I built it this way
+
+Most student portfolios are the same template with the names swapped out. They
+tell you where someone worked and nothing about what they'd be like to work
+with. I wanted mine to be the second thing.
+
+So the site isn't a page — it's a desktop. Every panel is a real window you can
+drag around, minimise to the taskbar, maximise, or close and reopen from the
+Start menu or its desktop icon. There's a mascot, Brick, who you can drag
+anywhere and feed slices off a wheel of cheese. None of that is necessary. That
+is sort of the point: it's the part of a portfolio that can't be copied off a
+template, because it only exists if someone decided to build it.
+
+### On how it was built
+
+I'm backend-leaning and I mostly write Python. I spent a weekend starting this
+myself across a few different stacks, decided a portfolio wasn't the best place
+to spend my time when I have actual projects to build, and made it with Claude
+instead — directing the work, making the design calls, testing each pass and
+sending it back with changes.
+
+The interaction design, the Windows 98 direction, the palettes, the scope, and
+every "no, do it this way" in here are mine. Most of the code is not. I'd
+rather tell you that up front than have you assume otherwise and find out in an
+interview.
+
+If you want code I wrote line by line, the repos linked from the projects
+window are the place to look. This one is a product decision rather than a code
+sample — though knowing which of the two a problem calls for is worth something
+as well.
+
+No framework and no dependencies was my constraint, and it held: the only build
+step is a Python script that turns markdown into blog pages.
+
+### On the look
+
+It's a Windows 98 desktop in four colour schemes. I grew up after that
+era but the chunky, physical, obviously-clickable feel of it is nicer than most
+of what replaced it, and it gave the whole thing one consistent idea to build
+against rather than a pile of unrelated effects.
+
+## What's in it
+
+- **A window manager.** Drag by the title bar, minimise / maximise / close,
+  taskbar buttons, a Start menu, right-click menus on the desktop and on window
+  chrome, and desktop icons you can rearrange — positions persist between
+  visits.
+- **Four themes** that are the same interface in different colours, plus a
+  fifth-column outlier (matrix) that deliberately looks nothing like the others.
+- **A blog** written in markdown and compiled to static pages by a ~70 line
+  renderer in `build.py`.
+- **A project stack** of polaroids that fans on hover and expands the whole
+  window when clicked, with each card linking out to its repo.
+- **Brick**, and the cheese.
+
+## Running it locally
 
 ```bash
-python3 -m http.server 8000     # then visit localhost:8000
+python3 -m http.server 8000     # then open localhost:8000
 ```
+
+Opening `index.html` directly works too, but a server is closer to how it
+actually runs.
+
+## How it's put together
+
+```
+index.html          structure only — no content lives here
+css/style.css       all four themes, as CSS variable blocks
+js/data.js          ← the content. projects, books, links, specs
+js/posts.js         GENERATED from posts/ — don't edit
+js/app.js           rendering, the window manager, brick, cheese
+posts/              ← the blog, one markdown file per post
+blog/               GENERATED post pages — don't edit
+build.py            markdown → blog; --bundle makes a single-file copy
+```
+
+Two ideas do most of the work:
+
+**Themes are variables, not stylesheets.** A theme is one block of custom
+properties. `data-chrome` on `<html>` picks which set of window furniture
+applies, so three of the four themes share a single block of chrome rules and
+differ only in colour. Adding a theme means writing variables and picking a
+chrome — you don't touch the chrome itself.
+
+The whole Windows 98 look comes down to two of those variables:
+
+```css
+--raise: inset 2px 2px 0 var(--lite), inset -2px -2px 0 var(--dark);  /* sticks out */
+--sink:  inset 2px 2px 0 var(--dark), inset -2px -2px 0 var(--lite);  /* pressed in */
+```
+
+Every button, panel and field is one of those two. There's no wallpaper image
+anywhere either — the desktop is a CSS dither checker over a gradient, which is
+the same trick a 256-colour display used to fake a colour it didn't have.
+
+**Content is data.** Everything on the site comes out of `js/data.js` and
+`posts/`. Adding a project is appending an object; adding a post is writing a
+markdown file and running the build. The rendering code doesn't change.
 
 ## Adding content
 
-Everything comes from `js/data.js`. Save the file, refresh the page.
-
-**A project** — append to `projects`. The polaroid stack re-lays itself out for any number of cards, stacking into rows of two once spread:
+**A project** — append to `projects` in `js/data.js`. The stack re-lays itself
+out for any number of cards, and `url` is what the expanded view opens:
 
 ```js
-{ title: "new thing", meta: "go · sqlite", color: "#5fd8cf", url: "https://…",
-  note: "one line about it." }
+{ title: "new thing", meta: "go · sqlite", color: "#5fd8cf",
+  url: "https://github.com/…", note: "one line about it." }
 ```
 
-Swap `color` for `src: "assets/shot.png"` once you have a real screenshot.
+**A post** — a markdown file in `posts/`, then `python3 build.py`. The filename
+becomes the URL minus any leading date, so
+`posts/2026-09-02-tcp-server-ram.md` becomes `blog/tcp-server-ram.html`.
 
-**A post** — append to `posts`. Tags become filter chips automatically; you don't maintain the chip list.
+```markdown
+---
+title: why my tcp server ate 4gb of ram
+date: 2026-09-02
+tags: [rust, notes]
+summary: one line, used as the page description. optional.
+draft: true
+---
 
-**Books, ratings, specs, badges, links** — same pattern, all in the same file. The sidebar counts compute themselves.
+markdown goes here.
+```
 
-## Themes
+`draft: true` skips a post entirely — no page, no listing entry — so unfinished
+things can sit in the folder. Tags become filter chips on their own. If you
+delete or re-draft a post, the next build removes its stale page.
 
-Two, both defined at the top of `style.css` as variable blocks: `[data-theme="retro"]` and `[data-theme="hacker"]`. To retune the retro palette, change those seven or eight variables — nothing else references raw colours. The choice is saved to `localStorage`.
-
-## Brick
-
-Three sprites in `assets/`: sitting, held, eating. `app.js` swaps `brick.src` between them; the bob and chew are CSS. Drag him anywhere, drop him near the avatar slot to re-dock. Drag a cheese wedge onto him to feed him.
-
-To animate him properly later, the cleanest path is a sprite sheet plus `steps()` in CSS rather than more PNGs.
+**Books, ratings, specs, badges, links** — same pattern, same file. The sidebar
+counts compute themselves.
 
 ## Deploying
 
-**GitHub Pages** — push to a repo, Settings → Pages → deploy from `main`, root. Live in a minute.
+This folder is the repo root, because GitHub Pages serves from a repo's root
+(or its `/docs`) and `index.html` has to be one of those.
 
-**Netlify or Vercel** — drag the folder onto the dashboard. No build command, no output directory.
+```bash
+python3 build.py        # only if posts/ changed
+git add -A
+git commit -m "..."
+git push
+```
 
-## Before it goes public
+Pages redeploys on push. If it stops updating, check **Settings → Pages**:
+source *Deploy from a branch*, branch `main`, folder `/ (root)`.
 
-- Replace the placeholder specs, links and email in `data.js`.
-- Replace the gradient tiles with real screenshots.
-- `assets/retro-bg.jpg` is 115 KB. Convert to WebP if you care about the first paint.
-- The "visits" counter is a hardcoded string. Wire it to a real counter service or drop it.
-- Confirm you have the rights to the wallpaper and the Brick artwork — the held sprite has a visible signature.
+## Credits
+
+Brick's sprites are someone else's artwork — see [`CREDITS.md`](CREDITS.md).
+Everything else here, including all the icons, is original.
