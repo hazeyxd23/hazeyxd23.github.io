@@ -1,0 +1,14 @@
+# Bundler output. Regenerate any time with `python3 build.py --bundle`;
+# there's no reason for it to be in the repo.
+dist/
+
+# Unused. The desktop has been pure CSS since the wallpaper was dropped, so
+# nothing references this image — and its licence was never verified, which is
+# reason enough to keep it out of a public repo. Safe to delete from disk too.
+assets/retro-bg.jpg
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
