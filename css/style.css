@@ -12,11 +12,11 @@
    A theme is nothing but its variable block; matrix is the only one that
    opts out (data-chrome="flat") and uses the plain styles above the block.
    Adding a theme means writing variables and picking a chrome, not copying
-   selectors. app.js keeps the attribute in sync, and index.html / the post
-   template set it up front so nothing flashes.
+   selectors. js/theme.js decides the chrome and puts both attributes on
+   <html> before first paint, on the desktop and the blog posts alike.
    ============================================================ */
 :root{
-  --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); --taskbar:46px;
+  --wrap:1040px; --ease:cubic-bezier(.22,1,.36,1); --taskbar:58px;
   --dither:rgba(255,255,255,.05);   /* the 4px checker over the desktop */
   --mesh:none;                      /* optional gradient under it */
   /* every theme defines these; the transparent fallback keeps a shared
@@ -26,8 +26,8 @@
 }
 
 /* win98 — the default. grey chrome, teal desktop, navy title bars.
-   shares every chrome rule with `retro` (see the block near the bottom);
-   only the variables below differ. */
+   shares every chrome rule with `soft` and `retro` (see the block near the
+   bottom); only the variables below differ. */
 [data-theme="win98"]{
   --bg:#008080; --deep:#c0c0c0;
   --face:#c0c0c0;
@@ -47,7 +47,6 @@
   --shadow:var(--raise), 2px 2px 0 rgba(0,0,0,.35);
   --card:#ffffff; --card-ink:#0d0d0d; --card-bd:#5a5a5a;
   --press:rgba(0,0,0,.16);
-  --scrim:transparent;
 }
 
 /* soft — the blue one. Structurally identical to win98 and retro: same
@@ -79,7 +78,6 @@
   --shadow:var(--raise), 2px 2px 0 rgba(10,30,60,.30);
   --card:#ffffff; --card-ink:#22303f; --card-bd:#7b94b4;
   --press:rgba(212,60,38,.16);
-  --scrim:transparent;
 }
 /* the profile sits straight on the blue desktop rather than in a panel, so it
    needs light ink — nothing to do with the chrome */
@@ -118,7 +116,6 @@
   --shadow:var(--raise), 3px 3px 0 rgba(0,0,0,.45);
   --card:#f6e4f3; --card-ink:#2b1140; --card-bd:rgba(0,0,0,.35);
   --press:rgba(239,127,182,.20);
-  --scrim:transparent;
 }
 [data-theme="hacker"]{
   --bg:#000; --deep:#010601;
@@ -132,8 +129,14 @@
   --hd-ink:#00ff41;
   --shadow:0 0 22px rgba(0,255,65,.12);
   --card:#020d05; --card-ink:#00ff41; --card-bd:#0a3d18;
-  --scrim:transparent;
+  --face:#020d05; --dark:#0a3d18; --lite:transparent;   /* back button, menu rules */
 }
+/* --panel is a faint green wash meant to sit on black. On its own it's
+   see-through, so icons showed through menus and windows — give it a black
+   base to sit on. */
+[data-theme="hacker"] .show,
+[data-theme="hacker"] .startmenu,
+[data-theme="hacker"] .ctxmenu{background:linear-gradient(var(--panel), var(--panel)), #000}
 
 *{box-sizing:border-box}
 body{
@@ -154,8 +157,8 @@ body{
   transition:opacity .35s;
 }
 #wall::after{
-  content:""; position:absolute; inset:0; background:var(--scrim);
-  box-shadow:inset 0 0 240px rgba(6,10,26,.38);
+  content:""; position:absolute; inset:0;
+  box-shadow:inset 0 0 240px rgba(6,10,26,.38);   /* a soft vignette */
 }
 [data-theme="hacker"] #wall{opacity:0}
 [data-theme="hacker"] body{text-shadow:0 0 6px rgba(0,255,65,.3)}
@@ -241,6 +244,13 @@ a:hover{color:var(--accent2)}
 .chip.on{color:var(--hd-ink); background:var(--pink)}
 [data-theme="hacker"] .chip.on{color:#000}
 .score{font-family:var(--mono); color:var(--accent)}
+/* bookshelf section headings — reading now / read / want to read */
+.shelf{display:flex; justify-content:space-between; padding:16px 14px 6px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1px dashed var(--muted)}
+.shelf:first-child{padding-top:10px}
+.shelf span{letter-spacing:0}
+.tiles.wide{grid-template-columns:repeat(4,1fr)}
 
 /* ---------- project stack ---------- */
 .stage{overflow:visible}
@@ -269,7 +279,6 @@ a:hover{color:var(--accent2)}
 .show.expanded{z-index:140; display:flex; flex-direction:column}
 body.zoomed .wrap{z-index:135}
 .show.expanded > .bd{flex:1; min-height:0; overflow:auto}
-.show.expanded .pol{cursor:pointer}
 @media (hover:hover){
   .show.expanded .pol:hover{
     box-shadow:0 26px 46px rgba(0,0,0,.55);
@@ -282,7 +291,7 @@ body.zoomed .wrap{z-index:135}
   color:var(--ink); background:var(--face); border:var(--bd);
   border-radius:var(--radius); box-shadow:var(--shadow);
 }
-.show.expanded .backstack{display:inline-block}
+.show.spread .backstack{display:inline-block}
 .backstack:hover{color:var(--accent)}
 [data-chrome="win"] .backstack{border-color:transparent; box-shadow:var(--raise)}
 [data-chrome="win"] .backstack:active{box-shadow:var(--sink)}
@@ -295,12 +304,7 @@ body.zoomed .wrap{z-index:135}
 #brick.eating{animation:chew .28s ease-in-out 6}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes chew{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.95)}}
-.cheese{position:absolute; width:40px; height:34px; z-index:110; cursor:grab; touch-action:none;
-  user-select:none; filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)); transition:transform .2s var(--ease)}
-.cheese:hover{transform:scale(1.15) rotate(-6deg)}
-@keyframes cut{from{transform:scale(.4) rotate(-25deg); opacity:0}}
-.cheese.fresh{animation:cut .32s var(--ease)}
-.cheese.held{cursor:grabbing; transform:scale(1.2)}
+#brick.away{visibility:hidden}
 .pop{position:absolute; z-index:130; font-family:var(--mono); font-size:13px; color:var(--accent);
   pointer-events:none; animation:pop 1s ease-out forwards}
 @keyframes pop{to{transform:translateY(-38px); opacity:0}}
@@ -309,7 +313,7 @@ body.zoomed .wrap{z-index:135}
 .toolbar{position:fixed; left:0; right:0; bottom:0; z-index:150; background:var(--deep);
   border-top:var(--bd); font-family:var(--mono); font-size:11px; color:var(--muted)}
 .toolbar .in{display:flex; align-items:center; gap:6px; flex-wrap:nowrap;
-  padding:5px 7px; min-height:var(--taskbar)}
+  padding:5px 7px; height:var(--taskbar)}
 .toolbar b{color:var(--ink); font-weight:400}
 .tool{padding:3px 10px; border:1px solid var(--muted); background:transparent; color:var(--muted);
   font-family:var(--mono); font-size:11px; cursor:pointer}
@@ -352,9 +356,9 @@ body.zoomed .wrap{z-index:135}
 .post-foot img{image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
 
 /* ============================================================
-   win98 + retro chrome — shared windows 95/98 furniture. both themes use
-   these rules; only their colour variables differ.
-   scoped to [data-chrome="win"] so the hacker theme is untouched.
+   windows 95/98 furniture, shared by win98, soft and retro — they use these
+   rules unchanged and differ only in their colour variables. Scoped to
+   [data-chrome="win"] so the matrix theme is untouched.
    ============================================================ */
 
 /* --- windows --- */
@@ -387,7 +391,6 @@ body.zoomed .wrap{z-index:135}
 /* --- buttons: tabs, chips, tools, swatches, back --- */
 [data-chrome="win"] .chip,
 [data-chrome="win"] .tool,
-[data-chrome="win"] .sw,
 [data-chrome="win"] .back{
   background:var(--face); color:var(--muted); border:0;
   box-shadow:var(--raise); border-radius:0; transition:none;
@@ -421,18 +424,10 @@ body.zoomed .wrap{z-index:135}
     repeating-conic-gradient(var(--press) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
     var(--face);
 }
-[data-chrome="win"] .sw{width:30px; height:26px; opacity:1}
+/* swatches keep their own preview backgrounds — only the bevel is shared */
+[data-chrome="win"] .sw{width:30px; height:26px; opacity:1; border:0;
+  box-shadow:var(--raise); border-radius:0; transition:none}
 [data-chrome="win"] .sw.on{box-shadow:var(--sink)}
-/* the .sw rule above sets a flat face on every swatch — put the
-   two previews back, or the theme picker turns into blank buttons */
-[data-chrome="win"] .sw[data-t="retro"]{
-  background:linear-gradient(135deg,#f7e08c,#ef7fb6 55%,#5fd8cf)}
-[data-chrome="win"] .sw[data-t="hacker"]{
-  background:linear-gradient(135deg,#00ff41,#000)}
-[data-chrome="win"] .sw[data-t="win98"]{
-  background:linear-gradient(135deg,#c0c0c0 0 48%,#000080 48%)}
-[data-chrome="win"] .sw[data-t="soft"]{
-  background:linear-gradient(135deg,#66c6bd,#3d79c2 55%,#27508f)}
 [data-chrome="win"] .tile{border:0; box-shadow:var(--sink)}
 
 /* the profile text sits straight on the desktop with no panel behind it,
@@ -545,7 +540,7 @@ body.zoomed .wrap{z-index:135}
    across its box, and any icon under it would be silently dead. */
 .desk{display:none}
 @media(min-width:860px){
-  body{padding-left:112px}                /* where icons land by default */
+  body.os{padding-left:112px}             /* where icons land by default */
   .desk{position:fixed; inset:0; bottom:var(--taskbar); z-index:1;
     display:block; pointer-events:none; overflow:hidden}
   .wrap{pointer-events:none}
@@ -564,12 +559,65 @@ body.zoomed .wrap{z-index:135}
 .ico:hover .l{text-decoration:underline}
 .ico.sel .l{background:#000080; color:#fff; text-shadow:none}
 .ico.sel svg{filter:drop-shadow(0 0 0 #000080) saturate(.5) brightness(.9)}
+[data-theme="hacker"] .ico.sel .l{background:var(--accent); color:#000}
 .ico.open svg{opacity:.74}
 .ico.open .l{opacity:.9}
 .ico.dragging{opacity:.75; z-index:5}
 .ico.block svg{width:58px; height:58px}
 .ico.block:active svg{transform:translateY(2px)}
-[data-theme="hacker"] .ico.sel .l{background:var(--accent); color:#000}
+.ico.block{cursor:grab}
+.ico.block.dragging{opacity:1; cursor:grabbing}
+.ico.block.dragging svg{transform:scale(1.12) rotate(-6deg)}
+/* the cheese growing back: a clock face filling clockwise from twelve, its
+   hand sweeping round with the fill. --p (0..1) is set every frame by
+   cheeseTick() in app.js. Drawn in the cheese's own outline and yellow. */
+.ico.growing{cursor:default}
+.ico .clock{display:block; position:relative; width:46px; height:46px; margin:6px;
+  border-radius:50%; border:2.5px solid #050505; box-sizing:border-box;
+  background:conic-gradient(#F3DC80 calc(var(--p, 0) * 1turn), rgba(255,255,255,.22) 0);
+  box-shadow:1px 2px 0 rgba(0,0,0,.45)}
+.ico .clock i{position:absolute; left:50%; top:50%; width:2.5px; height:44%; margin-left:-1.25px;
+  background:#050505; border-radius:2px; transform-origin:50% 0;
+  transform:rotate(calc(var(--p, 0) * 360deg + 180deg))}
+.ico .clock::after{content:""; position:absolute; left:50%; top:50%; width:6px; height:6px;
+  margin:-3px 0 0 -3px; border-radius:50%; background:#050505}
+@keyframes regrow{0%{transform:scale(.3); opacity:0} 70%{transform:scale(1.12)} 100%{transform:scale(1)}}
+.ico.fresh svg{animation:regrow .4s var(--ease)}
+/* compact: one column has to hold every icon (deskLayout() in app.js) */
+.desk.compact .ico{padding:4px 3px 3px; gap:3px}
+.desk.compact .ico svg{width:40px; height:40px}
+.desk.compact .ico.block svg{width:44px; height:44px}
+.desk.compact .ico .l{font-size:10.5px; line-height:1.25}
+.desk.compact .ico .clock{width:38px; height:38px; margin:3px}
+/* the dragged icon is moved in here so it passes over windows and Brick */
+.lift{position:fixed; inset:0; z-index:128; pointer-events:none}
+.lift .ico{pointer-events:none}
+
+/* "already open" and friends: a tooltip that drifts up off the icon and fades */
+.sign{position:fixed; z-index:140; pointer-events:none; white-space:nowrap;
+  padding:4px 9px; font-family:var(--mono); font-size:11px; color:#141414;
+  background:#ffffe1; border:1px solid #000; box-shadow:2px 2px 0 rgba(0,0,0,.45);
+  transform:translateX(-50%); animation:sign 1.4s ease-out forwards}
+@keyframes sign{
+  0%  {opacity:0; transform:translate(-50%, 6px)}
+  14% {opacity:1; transform:translate(-50%, 0)}
+  65% {opacity:1}
+  100%{opacity:0; transform:translate(-50%, -22px)}}
+/* and the window it was talking about blinks its title bar */
+@keyframes winflash{50%{filter:brightness(1.45) saturate(1.3)}}
+.show.flash > .hd{animation:winflash .22s steps(1) 4}
+@media(prefers-reduced-motion:reduce){ .sign{animation-duration:2s} .show.flash > .hd{animation:none} }
+
+/* squish brick: a small window over him that plays the clip and fades */
+.show.squishwin{position:absolute; z-index:126; width:214px; margin:0;
+  animation:squishin .18s var(--ease)}
+.show.squishwin > .hd{cursor:default}
+.show.squishwin > .bd{padding:6px}
+.show.squishwin video{display:block; width:100%; height:auto; background:#000}
+.show.squishwin.bye{opacity:0; transform:scale(.92); transition:opacity .3s, transform .3s}
+@keyframes squishin{from{transform:scale(.85); opacity:0}}
+/* over the grown projects view (.wrap is lifted to 135 for it) */
+body.zoomed .show.squishwin{z-index:141}
 
 /* ---------- hints ----------
    two callouts that point at the things nobody discovers on their own.
@@ -600,7 +648,10 @@ body.zoomed .wrap{z-index:135}
 .ctxmenu hr{border:0; height:2px; margin:4px 2px; background:var(--dark);
   box-shadow:0 1px 0 var(--lite)}
 
-@media(max-width:860px){
+/* 859.98, not 860: at exactly 860px max-width:860 and the min-width:860 block
+   above both matched, and the desktop and phone layouts applied at once.
+   app.js's narrow() uses the same line. */
+@media(max-width:859.98px){
   .grid{grid-template-columns:1fr}
   /* dragging windows around a phone screen is a trap — pin them back down */
   .show.float{position:static !important; width:auto !important}
@@ -616,5 +667,14 @@ body.zoomed .wrap{z-index:135}
   .pol .shot{height:122px}
   .pol .note{display:none}
   #brick{width:90px}
-  .tiles{grid-template-columns:repeat(2,1fr)}
+  .tiles, .tiles.wide{grid-template-columns:repeat(2,1fr)}
+  /* the taskbar can't hold window buttons and the tray at phone width — the
+     buttons squeezed to nothing. Windows are listed in Start instead. */
+  .tasks{display:none}
+  #shuffle{display:none}
+  .toolbar .in{justify-content:space-between}
+  /* no desktop on a phone, but the cheese stays: one icon next to Brick's
+     home, scrolling with the page */
+  body{position:relative}
+  .desk{display:block; position:absolute; inset:0; z-index:3; pointer-events:none}
 }

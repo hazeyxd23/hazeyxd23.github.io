@@ -188,14 +188,8 @@ PAGE = """<!DOCTYPE html>
 <title>{title} — hazeyxd23</title>
 <meta name="description" content="{summary}">
 <link rel="stylesheet" href="../css/style.css">
-<script>
-  /* restore the theme before first paint so post pages don't flash.
-     data-chrome must move with it — see the note at the top of style.css */
-  try {{
-    var t = localStorage.getItem('theme'), r = document.documentElement;
-    if (t) {{ r.dataset.theme = t; r.dataset.chrome = (t === 'hacker') ? 'flat' : 'win'; }}
-  }} catch (e) {{}}
-</script>
+<!-- restores the saved theme before first paint; shared with the desktop -->
+<script src="../js/theme.js"></script>
 </head>
 <body>
 <div id="wall"></div>
@@ -213,7 +207,7 @@ PAGE = """<!DOCTYPE html>
   </div>
 
   <article class="show post">
-    <div class="hd">post <span class="r">{date}</span><span class="btns"><b>_</b><b>&#9633;</b><b>&times;</b></span></div>
+    <div class="hd">post <span class="r">{date}</span></div>
     <div class="bd">
       <h1>{title}</h1>
       <div class="post-meta">{date}{tagline}</div>
@@ -229,16 +223,9 @@ PAGE = """<!DOCTYPE html>
 </div>
 
 <script>
-  var root = document.documentElement;
+  THEME.mark();
   document.querySelectorAll('.sw').forEach(function (b) {{
-    b.classList.toggle('on', b.dataset.t === root.dataset.theme);
-    b.onclick = function () {{
-      var t = b.dataset.t;
-      root.dataset.theme = t;
-      root.dataset.chrome = (t === 'hacker') ? 'flat' : 'win';
-      try {{ localStorage.setItem('theme', t); }} catch (e) {{}}
-      document.querySelectorAll('.sw').forEach(function (x) {{ x.classList.toggle('on', x === b); }});
-    }};
+    b.onclick = function () {{ THEME.apply(b.dataset.t); }};
   }});
 </script>
 </body>
@@ -312,10 +299,17 @@ def build_blog():
     return posts
 
 
+MIME = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+        "gif": "image/gif", "webp": "image/webp", "svg": "image/svg+xml",
+        "mp4": "video/mp4", "webm": "video/webm"}
+
+
 def data_uri(path):
-    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
-            "gif": "image/gif", "webp": "image/webp",
-            "svg": "image/svg+xml"}[path.suffix.lstrip(".").lower()]
+    """None for a type we don't know how to inline (rather than crashing —
+    adding the squish videos once broke --bundle with a KeyError)."""
+    mime = MIME.get(path.suffix.lstrip(".").lower())
+    if not mime:
+        return None
     return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
 
 
@@ -328,7 +322,8 @@ def bundle():
     html_src = (HERE / "index.html").read_text(encoding="utf-8")
     css = (HERE / "css/style.css").read_text(encoding="utf-8")
 
-    parts = [(HERE / "js/data.js").read_text(encoding="utf-8")]
+    parts = [(HERE / "js/theme.js").read_text(encoding="utf-8"),
+             (HERE / "js/data.js").read_text(encoding="utf-8")]
     posts_js = HERE / "js/posts.js"
     if posts_js.exists():
         parts.append(posts_js.read_text(encoding="utf-8"))
@@ -336,10 +331,15 @@ def bundle():
     js = "\n".join(parts)
 
     for asset in sorted((HERE / "assets").iterdir()):
-        if asset.is_file():
-            uri = data_uri(asset)
-            css = css.replace(f"../assets/{asset.name}", uri)
-            js = js.replace(f"assets/{asset.name}", uri)
+        if not asset.is_file():
+            continue
+        uri = data_uri(asset)
+        if uri is None:
+            print(f"  bundle: left {asset.name} as a link (unknown type)")
+            continue
+        css = css.replace(f"../assets/{asset.name}", uri)
+        js = js.replace(f"assets/{asset.name}", uri)
+        html_src = html_src.replace(f'"assets/{asset.name}"', f'"{uri}"')
 
     html_src = html_src.replace(
         '<link rel="stylesheet" href="css/style.css">', f"<style>\n{css}\n</style>")

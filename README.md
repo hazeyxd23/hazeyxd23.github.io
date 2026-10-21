@@ -19,7 +19,7 @@ with. I wanted mine to be the second thing.
 So the site isn't a page — it's a desktop. Every panel is a real window you can
 drag around, minimise to the taskbar, maximise, or close and reopen from the
 Start menu or its desktop icon. There's a mascot, Brick, who you can drag
-anywhere and feed slices off a wheel of cheese. None of that is necessary. That
+anywhere, feed blocks of cheese, and squish. None of that is necessary. That
 is sort of the point: it's the part of a portfolio that can't be copied off a
 template, because it only exists if someone decided to build it.
 
@@ -79,6 +79,7 @@ actually runs.
 ```
 index.html          structure only — no content lives here
 css/style.css       all four themes, as CSS variable blocks
+js/theme.js         restores the saved theme before first paint (all pages)
 js/data.js          ← the content. projects, books, links, specs
 js/posts.js         GENERATED from posts/ — don't edit
 js/app.js           rendering, the window manager, brick, cheese

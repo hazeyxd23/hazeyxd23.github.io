@@ -6,14 +6,8 @@
 <title>hello world — hazeyxd23</title>
 <meta name="description" content="the first post, and a working demo of every bit of markdown this blog supports.">
 <link rel="stylesheet" href="../css/style.css">
-<script>
-  /* restore the theme before first paint so post pages don't flash.
-     data-chrome must move with it — see the note at the top of style.css */
-  try {
-    var t = localStorage.getItem('theme'), r = document.documentElement;
-    if (t) { r.dataset.theme = t; r.dataset.chrome = (t === 'hacker') ? 'flat' : 'win'; }
-  } catch (e) {}
-</script>
+<!-- restores the saved theme before first paint; shared with the desktop -->
+<script src="../js/theme.js"></script>
 </head>
 <body>
 <div id="wall"></div>
@@ -31,7 +25,7 @@
   </div>
 
   <article class="show post">
-    <div class="hd">post <span class="r">2026-07-21</span><span class="btns"><b>_</b><b>&#9633;</b><b>&times;</b></span></div>
+    <div class="hd">post <span class="r">2026-07-21</span></div>
     <div class="bd">
       <h1>hello world</h1>
       <div class="post-meta">2026-07-21 · <span class='tag'>notes</span></div>
@@ -66,16 +60,9 @@
 </div>
 
 <script>
-  var root = document.documentElement;
+  THEME.mark();
   document.querySelectorAll('.sw').forEach(function (b) {
-    b.classList.toggle('on', b.dataset.t === root.dataset.theme);
-    b.onclick = function () {
-      var t = b.dataset.t;
-      root.dataset.theme = t;
-      root.dataset.chrome = (t === 'hacker') ? 'flat' : 'win';
-      try { localStorage.setItem('theme', t); } catch (e) {}
-      document.querySelectorAll('.sw').forEach(function (x) { x.classList.toggle('on', x === b); });
-    };
+    b.onclick = function () { THEME.apply(b.dataset.t); };
   });
 </script>
 </body>

@@ -15,6 +15,10 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
   json: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }
 };
+/* below 860px it's a phone layout: no desktop icons, windows pinned in the
+   flow. style.css switches at the same width (max-width:859.98px). */
+const narrow = () => innerWidth < 860;
+
 /* run at most once a frame — resize and scroll fire far faster than paint */
 const onFrame = fn => {
   let queued = false;
@@ -26,17 +30,12 @@ const onFrame = fn => {
 };
 
 /* ---------------- theme ----------------
-   `data-chrome` decides which set of window furniture the stylesheet
-   applies, so themes that look alike share one block of CSS. */
+   js/theme.js already put the saved theme on <html> in <head>, before first
+   paint, and owns which themes share the Windows 98 chrome — the blog posts
+   load the same file, so the mapping lives in one place. */
 const root = document.documentElement;
-const WIN_CHROME = ['win98', 'soft', 'retro'];   /* everything but matrix */
-function applyTheme(t){
-  root.dataset.theme = t;
-  root.dataset.chrome = WIN_CHROME.includes(t) ? 'win' : 'flat';
-  store.set('theme', t);
-  $$('.sw').forEach(x => x.classList.toggle('on', x.dataset.t === t));
-}
-applyTheme(store.get('theme', root.dataset.theme));
+const applyTheme = t => THEME.apply(t);
+THEME.mark();
 $$('.sw').forEach(b => { b.onclick = () => applyTheme(b.dataset.t); });
 
 /* ---------------- profile ---------------- */
@@ -65,7 +64,7 @@ D.projects.forEach((p, i) => {
 let spread = false;
 function layout(mode, avail){
   const pol = $$('.pol', stack), n = pol.length;
-  const small = innerWidth < 860;
+  const small = narrow();
   const cardW = small ? 196 : 268;
   const cardH = small ? 250 : 330;
   const step  = small ? 34 : 48;
@@ -122,12 +121,26 @@ const projHint = projWin.querySelector(':scope > .hd .r');
 const HINT_STACKED = projHint ? projHint.textContent : '';
 
 function expandProjects(on){
-  if (innerWidth < 860){            /* no room to grow; just lay the cards out */
+  if (narrow()){                    /* no room to grow; just lay the cards out */
     spread = on;
+    projWin.classList.toggle('spread', on);   /* shows the back button */
     layout(on ? 'spread' : 'stacked');
+    if (projHint) projHint.textContent = on ? 'tap a project to open its repo' : HINT_STACKED;
+    /* the spread is one long column of cards on a phone — coming back, put
+       the window's top in view rather than leaving you halfway down it */
+    if (!on) projWin.scrollIntoView({ block: 'start', behavior: 'smooth' });
     return;
   }
-  projWin.classList.remove('max');
+  /* Maximising stashes the window's geometry in _pos and clears the inline
+     values, so a maximised window has NO inline size. Reading style.width
+     here used to save that emptiness as the size to come back to, and "back
+     to the stack" left the window shrink-wrapped to its content. So: pull
+     the real geometry back out of _pos first, and remember it was maximised. */
+  if (projWin.classList.contains('max')){
+    projWin.classList.remove('max');
+    if (on){ Object.assign(projWin.style, projWin._pos || {}); projWin._preMax = true; }
+    projWin._pos = null;            /* maximised while expanded: just drop it */
+  } else if (on) projWin._preMax = false;
   floatOut(projWin);                /* defined in the window-manager section */
   focusWin(projWin);
   projWin.classList.add('anim');
@@ -149,8 +162,15 @@ function expandProjects(on){
     projWin.style.height = '';
     projWin.classList.remove('expanded');
     layout('stacked');
+    if (projWin._preMax){           /* it was maximised before it grew */
+      projWin._pos = { left: projWin.style.left, top: projWin.style.top, width: projWin.style.width };
+      projWin.style.left = projWin.style.top = projWin.style.width = '';
+      projWin.classList.add('max');
+      projWin._preMax = false;
+    }
   }
   spread = on;
+  projWin.classList.toggle('spread', on);
   if (projHint) projHint.textContent = on ? 'click a project to open its repo' : HINT_STACKED;
   document.body.classList.toggle('zoomed', on);
   clearTimeout(projWin._animT);
@@ -189,7 +209,8 @@ const tile = p => `<div class="tile" ${shot(p)}><span>${esc(p.caption||'')}</spa
 $('#homeShots').innerHTML = D.photos.slice(0, 6).map(tile).join('');
 
 /* sidebar */
-$('#specs').innerHTML  = D.specs.map(([k,v]) => `<div class="spec"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');
+const specRows = () => D.specs.map(([k,v]) => `<div class="spec"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');
+$('#specs').innerHTML  = specRows();
 $('#badges').innerHTML = D.badges.map(b => `<a class="badge" href="${esc(b.url)}" target="_blank" rel="noopener"><b style="background:${esc(b.color)}"></b>${esc(b.name)}</a>`).join('');
 $('#badgeCount').textContent = D.badges.length;
 $('#links').innerHTML  = D.links.map(l => `<a href="${esc(l.url)}">${esc(l.name)}</a>`).join(' · ');
@@ -216,11 +237,11 @@ function renderGallery(view='photos'){
   const box = $('#galleryBody'), hd = $('#galleryHd');
   if (view === 'photos'){
     hd.textContent = 'photos';
-    box.innerHTML = `<div class="bd"><div class="tiles" style="grid-template-columns:repeat(4,1fr)">${D.photos.map(tile).join('')}</div></div>`;
+    box.innerHTML = `<div class="bd"><div class="tiles wide">${D.photos.map(tile).join('')}</div></div>`;
   } else if (view === 'bookshelf'){
     hd.textContent = 'bookshelf';
     const group = (label, arr, extra=()=>'') => `
-      <div class="hd" style="margin-top:0">${label} <span class="r">${arr.length}</span></div>
+      <div class="shelf">${label}<span>${arr.length}</span></div>
       ${arr.map(b => `<div class="row"><span>${esc(b.title)}</span><span class="sub">${esc(b.author)}${extra(b)}</span></div>`).join('') || `<div class="row"><span class="sub">empty</span></div>`}`;
     box.innerHTML = group('reading now', D.books.reading)
                   + group('read', D.books.read, b => b.rating ? ` · ${'★'.repeat(b.rating)}` : '')
@@ -240,17 +261,16 @@ function renderAbout(view='bio'){
   const box = $('#aboutBody');
   if (view === 'bio'){
     box.innerHTML = `
-      <div class="show"><div class="hd">bio</div><div class="bd">${esc(D.profile.bio)}
+      <div class="show" data-key="about"><div class="hd">bio</div><div class="bd">${esc(D.profile.bio)}
         <p style="margin-top:14px"><a href="${esc(D.profile.resume)}">resume</a> · <a href="mailto:${esc(D.profile.email)}">${esc(D.profile.email)}</a></p></div></div>`;
   } else if (view === 'setup'){
-    box.innerHTML = `<div class="show"><div class="hd">hardware</div><div class="bd">${
-      D.specs.map(([k,v]) => `<div class="spec"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('')}</div></div>`;
+    box.innerHTML = `<div class="show" data-key="about"><div class="hd">hardware</div><div class="bd">${specRows()}</div></div>`;
   } else if (view === 'tech'){
-    box.innerHTML = `<div class="show"><div class="hd">tech i like</div>${
+    box.innerHTML = `<div class="show" data-key="about"><div class="hd">tech i like</div>${
       D.badges.map(b => `<div class="row"><a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.name)}</a>
       <span class="sub" style="white-space:normal;text-align:right">${esc(b.note||'')}</span></div>`).join('')}</div>`;
   } else {
-    box.innerHTML = `<div class="show"><div class="hd">links</div>${
+    box.innerHTML = `<div class="show" data-key="about"><div class="hd">links</div>${
       D.links.map(l => `<div class="row"><a href="${esc(l.url)}">${esc(l.name)}</a><span class="sub">${esc(l.url)}</span></div>`).join('')}</div>`;
   }
 }
@@ -274,9 +294,18 @@ function scatterBrick(){
   docked = false; dock.classList.add('empty');
   brick.style.left = (Math.random() * (innerWidth - 160)) + 'px';
   brick.style.top  = (scrollY + 120 + Math.random() * 300) + 'px';
+  keepOnScreen();
+}
+/* Brick dropped half under the taskbar or off the right edge was as good as
+   lost. Pull him back inside the visible desktop. (page coordinates) */
+function keepOnScreen(){
+  const w = brick.offsetWidth, h = brick.offsetHeight;
+  const maxX = scrollX + document.documentElement.clientWidth - w;
+  const maxY = scrollY + innerHeight - taskbarH() - h;
+  brick.style.left = Math.max(scrollX, Math.min(parseFloat(brick.style.left) || 0, maxX)) + 'px';
+  brick.style.top  = Math.max(scrollY, Math.min(parseFloat(brick.style.top)  || 0, maxY)) + 'px';
 }
 addEventListener('resize', () => { if (docked) redock(); });
-addEventListener('load', redock);
 
 function draggable(node, { onGrab, onDrop } = {}){
   let dx = 0, dy = 0;
@@ -300,58 +329,119 @@ draggable(brick, {
   onGrab(){ clearTimeout(eatTimer); eatTimer = null; brick.src = GRAB; docked = false; dock.classList.add('empty'); },
   onDrop(){
     brick.src = SIT;
+    keepOnScreen();
     const b = brick.getBoundingClientRect(), d = dock.getBoundingClientRect();
     if (Math.hypot(b.left - d.left, b.top - d.top) < 120){ docked = true; redock(); }
-    $$('.cheese').forEach(tryFeed);
+    /* dropping Brick on the cheese works as well as the other way round */
+    if (brickCanEat() && cheeseIco && overlap(brick.getBoundingClientRect(),
+        cheeseIco.querySelector('.g').getBoundingClientRect())) eatCheese();
   }
 });
 
-/* ---------------- cheese ---------------- */
-/* Drawn as a wheel of cheese with one wedge cut out, and the wedge itself.
-   Both are generated geometry — an ellipse top face, an extruded rind, and the
-   cut walls of the notch — so they read as solids rather than flat shapes even
-   at 40px. Angles and depth were tuned against the icon size, not the artboard.
+/* ---------------- squish ----------------
+   plays the "mmmh yes squishy rat" clip in a little window over Brick. He
+   steps out of frame while it runs — he's the one being squished — and comes
+   back once it has played three times and faded. */
+const SQUISH_PLAYS = 3;
+let squishWin = null;
+function squish(){
+  if (squishWin){ squishWin._done = true; squishWin.remove(); }
+  const b = brick.getBoundingClientRect();
+  const w = el(`<div class="show squishwin" role="dialog" aria-label="brick, squished">
+    <div class="hd">squish.gif<span class="btns"><b title="close">×</b></span></div>
+    <div class="bd"><video muted playsinline autoplay preload="auto" width="198" height="250"
+      aria-label="brick being squished">
+      <source src="assets/brick-squish.webm" type="video/webm">
+      <source src="assets/brick-squish.mp4" type="video/mp4"></video></div>
+  </div>`);
+  document.body.append(w);
+  squishWin = w;
+  const W = w.offsetWidth, H = w.offsetHeight;
+  const x = Math.min(Math.max(8, b.left + b.width / 2 - W / 2), innerWidth - W - 8);
+  const y = Math.min(Math.max(8, b.top + b.height / 2 - H / 2), innerHeight - taskbarH() - H - 8);
+  w.style.left = (x + scrollX) + 'px';
+  w.style.top  = (y + scrollY) + 'px';
+  brick.classList.add('away');
 
-   cheese wheel */
-const CHEESE_BLOCK = `<svg viewBox="0 0 64 54" xmlns="http://www.w3.org/2000/svg">
-<path d="M 32.00 36.00 L 58.74 33.91 A 27 15 0 0 1 40.34 50.27 Z" fill="#c9921c" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<path d="M 32.00 24.00 L 40.34 38.27 L 40.34 50.27 L 32.00 36.00 Z" fill="#fbd764" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<path d="M 40.34 38.27 A 27 15 0 0 1 5.00 24.00 L 5.00 36.00 A 27 15 0 0 0 40.34 50.27 Z" fill="#e8ae2c" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<path d="M 32.00 24.00 L 58.74 21.91 A 27 15 0 1 0 40.34 38.27 Z" fill="#ffe486" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<ellipse cx="18" cy="21" rx="3.4" ry="2" fill="#eccb58"/>
-<ellipse cx="30" cy="14" rx="2.6" ry="1.5" fill="#eccb58"/>
-<ellipse cx="23" cy="29" rx="3" ry="1.8" fill="#eccb58"/>
-<ellipse cx="11" cy="25" rx="2.2" ry="1.4" fill="#eccb58"/>
-<ellipse cx="16" cy="38" rx="2.4" ry="1.7" fill="#c9921c"/>
-</svg>`;
-
-/* one slice out of that wheel */
-const CHEESE = `<svg viewBox="0 0 44 36" xmlns="http://www.w3.org/2000/svg">
-<path d="M 33.58 6.50 A 33 17 0 0 1 33.58 23.50 L 33.58 33.50 A 33 17 0 0 0 33.58 16.50 Z" fill="#e8ae2c" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<path d="M 5.00 15.00 L 33.58 23.50 L 33.58 33.50 L 5.00 25.00 Z" fill="#fbd764" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<path d="M 5.00 15.00 L 33.58 6.50 A 33 17 0 0 1 33.58 23.50 Z" fill="#ffe486" stroke="#7a4c0f" stroke-width="2" stroke-linejoin="round"/>
-<ellipse cx="24" cy="14" rx="2.8" ry="1.7" fill="#eccb58"/>
-<ellipse cx="31" cy="18" rx="2.1" ry="1.3" fill="#eccb58"/>
-<ellipse cx="18" cy="18" rx="2.2" ry="1.4" fill="#eccb58"/>
-<ellipse cx="24" cy="27" rx="2.1" ry="1.4" fill="#c9921c"/>
-</svg>`;
-
-const MAX_SLICES = 14;
-function cutSlice(fromRect){
-  if ($$('.cheese').length >= MAX_SLICES) return;
-  const c = el(`<div class="cheese fresh">${CHEESE}</div>`);
-  /* land clear of the block, not on top of it — slices used to pile over
-     the icon and bury the thing you click to make more */
-  c.style.left = (fromRect.left + scrollX + ICO_W + 8 + Math.random() * 92) + 'px';
-  c.style.top  = (fromRect.top  + scrollY - 4 + Math.random() * 84) + 'px';
-  document.body.append(c);
-  draggable(c, { onDrop(){ tryFeed(c); } });
-  setTimeout(() => c.classList.remove('fresh'), 340);
+  const v = w.querySelector('video');
+  let plays = 0;
+  const done = () => {
+    if (w._done) return;
+    w._done = true;
+    w.classList.add('bye');
+    setTimeout(() => w.remove(), 300);
+    if (squishWin === w){ squishWin = null; setTimeout(() => brick.classList.remove('away'), 160); }
+  };
+  v.addEventListener('ended', () => {
+    if (++plays < SQUISH_PLAYS){ v.currentTime = 0; v.play().catch(done); } else done();
+  });
+  /* with <source> children a failed load fires on the source, not the video;
+     only the last one failing means nothing will play */
+  w.querySelector('source:last-of-type').addEventListener('error', done);
+  v.play().catch(() => {});
+  /* if the clip never gets going, don't leave Brick missing */
+  setTimeout(done, 1000 * SQUISH_PLAYS + 2500);
+  w.querySelector('.btns b').onclick = done;
 }
-function tryFeed(c){
-  const a = c.getBoundingClientRect(), b = brick.getBoundingClientRect();
-  if (a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top){ c.remove(); feed(b); }
+
+/* ---------------- cheese ----------------
+   One block of cheese on the desktop, drawn after the piece Brick is holding
+   in brick-eat.png: flat yellow, a heavy black outline, holes as outlines.
+   Drag the whole block onto Brick (or Brick onto it) and he eats it. Five
+   seconds later another one grows back in the same spot, and a clock face
+   fills clockwise in its place while you wait. The respawn time lives out
+   here, not on the icon, because renderDesk() rebuilds every icon whenever
+   the taskbar changes. */
+const CHEESE_BLOCK = `<svg viewBox="0 0 64 56" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#050505" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+<path d="M41 29 L59 13.5 L59 30 L41 46 Z" fill="#E4C762"/>
+<path d="M4 23 L41 29 L41 46 L4 39.5 Z" fill="#F3DC80"/>
+<path d="M4 23 L41 29 L59 13.5 L27 9 Z" fill="#F3DC80"/>
+<g stroke-width="1.7" fill="#EAD174">
+<ellipse cx="13.5" cy="32" rx="3.2" ry="2.7"/>
+<ellipse cx="28.5" cy="38.5" rx="3.9" ry="3"/>
+<ellipse cx="33" cy="17.5" rx="3.6" ry="1.9"/>
+<ellipse cx="20" cy="20.5" rx="2.3" ry="1.3"/>
+<path d="M4 29 a2.6 2.6 0 0 1 0 5.4"/>
+<ellipse cx="50.5" cy="27.5" rx="2" ry="2.8" fill="#D9B955"/>
+</g>
+</svg>`;
+const RESPAWN_MS = 5000;
+let cheeseIco = null;              /* the current icon; renderDesk replaces it */
+let cheeseBack = 0;                /* when the next block is due; 0 = it's here */
+const cheeseReady = () => !cheeseBack;
+/* ...and Brick has to be there to eat it: during a squish he's hidden, and
+   feeding the empty spot used to count */
+const brickCanEat = () => cheeseReady() && !brick.classList.contains('away');
+const overlap = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+function setCheese(ico, fresh){
+  const here = cheeseReady();
+  ico.querySelector('.g').innerHTML = here ? CHEESE_BLOCK : '<span class="clock"><i></i></span>';
+  ico.classList.toggle('growing', !here);
+  ico.title = here ? 'drag me onto brick' : 'more cheese on the way';
+  if (here && fresh){
+    ico.classList.add('fresh');
+    setTimeout(() => ico.classList.remove('fresh'), 420);
+  }
 }
+function cheeseTick(){
+  const left = cheeseBack - Date.now();
+  if (left <= 0){
+    cheeseBack = 0;
+    if (cheeseIco) setCheese(cheeseIco, true);
+    return;
+  }
+  if (cheeseIco) cheeseIco.style.setProperty('--p', (1 - left / RESPAWN_MS).toFixed(4));
+  requestAnimationFrame(cheeseTick);
+}
+function eatCheese(){
+  if (!brickCanEat()) return;
+  feed(brick.getBoundingClientRect());
+  cheeseBack = Date.now() + RESPAWN_MS;
+  if (cheeseIco){ cheeseIco.style.setProperty('--p', 0); setCheese(cheeseIco); }
+  requestAnimationFrame(cheeseTick);
+}
+
 function feed(b){
   fed++;
   const n1 = $('#cheeseCount'), n2 = $('#cheeseCount2'), n3 = $('#fedBig');
@@ -417,18 +507,20 @@ function moveTo(w, x, y){
   w.style.top  = (Math.max(0, y) - w._oy) + 'px';
 }
 
+/* put a window back in its slot in the grid. Closed and minimised windows
+   stay that way: tidying rearranges what's open, it doesn't reopen the
+   windows the page deliberately starts closed. */
 function dockBack(w){
-  if (w === projWin && w.classList.contains('expanded')) expandProjects(false);
+  if (w === projWin && spread) expandProjects(false);
   if (w._ph){ w._ph.remove(); w._ph = null; }
   w._pos = null; w._ox = w._oy = 0;
-  w.classList.remove('float', 'max', 'min', 'dragging');
-  delete w.dataset.closed;
+  w.classList.remove('float', 'max', 'dragging');
   w.style.cssText = '';
 }
 
 function dragFrom(w, e){
   if (e.button || e.target.closest('.btns')) return;
-  if (w.classList.contains('max') || innerWidth < 860) return;
+  if (w.classList.contains('max') || narrow()) return;
   e.preventDefault();
   floatOut(w); focusWin(w);
   const r = w.getBoundingClientRect();
@@ -445,6 +537,11 @@ function dragFrom(w, e){
 }
 
 function winAction(w, action){
+  /* the projects window grown to fill the screen puts the page in "zoomed"
+     mode, which lifts .wrap over Brick. Minimised or closed like that, the
+     page stayed zoomed with nothing showing and Brick simply vanished.
+     Collapse it first. */
+  if ((action === 'min' || action === 'close') && w === projWin && spread) expandProjects(false);
   if (action === 'min')   w.classList.add('min');
   if (action === 'close'){ w.classList.add('min'); w.dataset.closed = '1'; }
   if (action === 'max'){
@@ -510,7 +607,7 @@ function cascadeCol(list){
 }
 
 function cascade(force){
-  if (innerWidth < 860) return;
+  if (narrow()) return;
   const page = $('.page.on');
   if (!page || (page.dataset.arranged && !force)) return;
   page.dataset.arranged = '1';
@@ -549,77 +646,220 @@ function reopen(w){
   renderTaskbar();
 }
 
-/* open it if it's closed or minimised, otherwise just bring it to the front */
-function openWin(w){
-  if (w.dataset.closed || w.classList.contains('min')) return reopen(w);
-  focusWin(w);
+/* a little note that floats up off whatever you clicked and fades out */
+function sign(anchor, text){
+  if (anchor._sign) anchor._sign.remove();
+  const r = anchor.getBoundingClientRect();
+  const s = el('<div class="sign" role="status"></div>');
+  s.textContent = text;
+  document.body.append(s);
+  /* above the icon, unless that's off the top of the screen — the first row
+     of icons sits right against it — in which case just under the label */
+  const above = r.top - s.offsetHeight - 4;
+  s.style.left = (r.left + r.width / 2) + 'px';
+  s.style.top  = (above >= 4 ? above : r.bottom + 2) + 'px';
+  anchor._sign = s;
+  s.addEventListener('animationend', () => s.remove());
+}
+
+/* Open it if it's closed or minimised. If it's already open, say so — a
+   double-click that visibly does nothing reads as a broken icon, which is
+   exactly what people testing the site kept running into — then bring the
+   window forward and blink its title bar so you can see which one it is. */
+function openWin(w, ico){
+  const shut = w.dataset.closed || w.classList.contains('min');
+  if (shut) reopen(w);
+  else {
+    if (ico) sign(ico, 'already open');
+    focusWin(w);
+    w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
+  }
   if (!floating(w)) w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 /* icons can be dragged anywhere and stay put across reloads, keyed by the
-   window's title so the map survives panels being re-rendered */
+   window's name so the map survives panels being re-rendered. Windows whose
+   title changes with a chip (gallery, about) carry a data-key instead. */
 const ICO_W = 106, ICO_H = 106;
 let icoPos = store.json('icons', {});
 const saveIcoPos = () => store.set('icons', JSON.stringify(icoPos));
+const keyOf = w => w.dataset.key || titleOf(w);
 
-/* Where each icon starts: one column down the left, in this order. Anything
-   not listed lands after them. These are only the DEFAULTS — anything the user
-   drags is remembered in localStorage.icons and wins over this table. */
+/* Where each icon starts: down the left, in this order; windows from other
+   tabs take the first slots this tab leaves free. These are only DEFAULTS —
+   anything the user drags is remembered in localStorage.icons and wins. */
 const LEFT = [
   'project showcase', 'writing showcase', 'screenshot showcase', 'elsewhere',
-  'pc specs', 'badges', 'collection', 'cheese wheel'
+  'pc specs', 'badges', 'collection', 'cheese'
 ];
 
-function defaultIcoPos(key){
-  const i = LEFT.indexOf(key);
-  const slot = i > -1 ? i : LEFT.length;
-  const perCol = Math.max(1, Math.floor((innerHeight - 80) / ICO_H));
-  return { x: 8 + Math.floor(slot / perCol) * ICO_W, y: 12 + (slot % perCol) * ICO_H };
+/* How the default column is laid out. Usually ICO_H apart, wrapping into a
+   second column beside the first. Where only ONE column fits between the
+   screen edge and the page — 1280x720, 1024x768, most 13" laptops — the
+   icons go compact and closer together so all of them fit in it. Before,
+   the overflow column landed on top of the page and the icons in it got
+   shoved out into the gaps between windows. */
+let deskGrid = { step: ICO_H, perCol: 7, compact: false };
+function deskLayout(){
+  const deskH = ($('#desk')?.clientHeight || innerHeight) - 12;
+  const page = $('.wrap .profile');
+  const room = page ? page.getBoundingClientRect().left - 8 : ICO_W;
+  const cols = Math.max(1, Math.floor(room / ICO_W));
+  let step = ICO_H;
+  if (Math.floor(deskH / ICO_H) * cols < LEFT.length)
+    step = Math.max(80, Math.floor(deskH / Math.ceil(LEFT.length / cols)));
+  return { step, perCol: Math.max(1, Math.floor(deskH / step)), compact: step < ICO_H };
 }
+function defaultIcoPos(slot){
+  const { step, perCol } = deskGrid;
+  return { x: 8 + Math.floor(slot / perCol) * ICO_W, y: 12 + (slot % perCol) * step };
+}
+
+/* ---- keeping icons where they can be clicked ----
+   The desktop sits underneath everything else. Drop an icon under something
+   that never moves — Brick's home, the profile, the tabs — and it could never
+   be clicked again, and so never dragged back out either. So an icon may only
+   land where a click on its picture and on its label would actually reach it,
+   and not on top of another icon. If the spot fails, it slides to the nearest
+   one that passes.
+
+   What counts as cover depends on who's asking. "nom!" pops and signs never
+   do — they're gone in a second. Hints do when YOU drop an icon (don't drop
+   it under one), but not when the page checks itself on load: a hint is
+   temporary, and letting it push icons out of their column on a first visit
+   was how 1280x720 ended up with icons scattered over the page. */
+const PASS_ALWAYS = '.pop, .sign';
+
+/* points to test, as offsets inside the icon: a 3x3 grid over the picture
+   and three points along the label. Testing only the centres let an icon sit
+   half under a tab — reachable, technically, but half its name hidden. */
+function probeOf(ico){
+  const r = ico.getBoundingClientRect();
+  const g = ico.querySelector('.g').getBoundingClientRect();
+  const l = ico.querySelector('.l').getBoundingClientRect();
+  const pts = [];
+  for (const fx of [0.08, 0.5, 0.92]) for (const fy of [0.08, 0.5, 0.92])
+    pts.push([g.left - r.left + g.width * fx, g.top - r.top + g.height * fy]);
+  const ly = l.top - r.top + l.height / 2;
+  pts.push([l.left - r.left + 3, ly], [l.left - r.left + l.width / 2, ly], [l.right - r.left - 3, ly]);
+  return pts;
+}
+
+/* would the icon be reachable at desk position x,y? Pure arithmetic plus
+   elementFromPoint — nothing is moved, so testing thousands of spots costs
+   no layout. */
+function spotFree(ico, x, y, desk, others, probe, pass){
+  const w = ICO_W, h = ico.offsetHeight;
+  if (x < 0 || y < 0 || x + w > desk.width || y + h > desk.height) return false;
+  const L = desk.left + x, T = desk.top + y;
+  if (others.some(o => L < o.right - 6 && L + w > o.left + 6 && T < o.bottom - 6 && T + h > o.top + 6))
+    return false;
+  return probe.every(([px, py]) => {
+    const hit = document.elementFromPoint(L + px, T + py);
+    return !hit || hit === document.documentElement || hit === document.body
+        || ico.contains(hit) || !!hit.closest(pass);
+  });
+}
+
+/* move the icon to the nearest reachable spot; true if it had to move.
+   strict = a user drop (hints count as cover) */
+function settle(ico, strict){
+  const deskEl = $('#desk');
+  if (!deskEl || narrow() || !ico.isConnected) return false;
+  const pass = strict ? PASS_ALWAYS : PASS_ALWAYS + ', .hint';
+  const desk = deskEl.getBoundingClientRect();
+  const others = $$('.ico', deskEl).filter(o => o !== ico).map(o => o.getBoundingClientRect());
+  const probe = probeOf(ico);
+  const x0 = parseFloat(ico.style.left), y0 = parseFloat(ico.style.top);
+  if (spotFree(ico, x0, y0, desk, others, probe, pass)) return false;
+  const S = 12, spots = [];
+  for (let y = 0; y + ico.offsetHeight <= desk.height; y += S)
+    for (let x = 0; x + ICO_W <= desk.width; x += S)
+      spots.push([x, y, (x - x0) ** 2 + (y - y0) ** 2]);
+  spots.sort((a, b) => a[2] - b[2]);
+  for (const [x, y] of spots){
+    if (!spotFree(ico, x, y, desk, others, probe, pass)) continue;
+    ico.style.left = x + 'px';
+    ico.style.top  = y + 'px';
+    return true;
+  }
+  return false;                           /* nowhere free at all: leave it be */
+}
+
+/* Check every icon — on load, after a resize, after a tab switch. These
+   nudges are NOT saved: they answer this screen size at this moment, and the
+   spot you chose should come back when the screen has room for it again. */
+function settleAll(){ $$('#desk .ico').forEach(ico => settle(ico, false)); }
+
+/* The icon being dragged rides above everything — windows, the profile,
+   Brick — so you can see where it's going and drop the cheese on him.
+   .lift is fixed at the viewport's corner. On a desktop .desk is too, so
+   positions carry straight over; on a phone .desk scrolls with the page,
+   so they're converted by the difference. */
+const lift = el('<div class="lift"></div>');
+document.body.append(lift);
 
 function dragIcon(ico, e){
   if (e.button) return;
+  if (ico.classList.contains('growing')) return;     /* nothing to pick up yet */
   const desk = ico.parentElement;
   const r = ico.getBoundingClientRect();
   const dx = e.clientX - r.left, dy = e.clientY - r.top;
-  let moved = false;
+  const from = { left: ico.style.left, top: ico.style.top };
+  let moved = false, x = 0, y = 0, off = { x: 0, y: 0 };
   const move = ev => {
     /* a few px of slop, or every click would count as a drag */
     if (!moved && Math.hypot(ev.clientX - e.clientX, ev.clientY - e.clientY) < 5) return;
-    if (!moved){ moved = true; ico.classList.add('dragging'); }
     const d = desk.getBoundingClientRect();
-    const x = Math.min(Math.max(0, ev.clientX - dx - d.left), d.width  - ICO_W);
-    const y = Math.min(Math.max(0, ev.clientY - dy - d.top),  d.height - ICO_H);
-    ico.style.left = x + 'px';
-    ico.style.top  = y + 'px';
+    if (!moved){
+      moved = true;
+      ico.classList.add('dragging');
+      const l = lift.getBoundingClientRect();
+      off = { x: d.left - l.left, y: d.top - l.top };
+      lift.append(ico);
+    }
+    x = Math.min(Math.max(0, ev.clientX - dx - d.left), d.width  - ICO_W);
+    y = Math.min(Math.max(0, ev.clientY - dy - d.top),  d.height - ico.offsetHeight);
+    ico.style.left = (x + off.x) + 'px';
+    ico.style.top  = (y + off.y) + 'px';
   };
   const up = () => {
     removeEventListener('pointermove', move);
     removeEventListener('pointerup', up);
+    removeEventListener('pointercancel', up);
     if (!moved) return;
     ico.classList.remove('dragging');
-    icoPos[ico._key] = { x: parseFloat(ico.style.left), y: parseFloat(ico.style.top) };
-    saveIcoPos();
     ico._dragged = true;                  /* swallow the click that follows */
     setTimeout(() => { ico._dragged = false; }, 0);
+    /* a drop handler that takes the icon (Brick eating the cheese) sends it
+       back where it came from — that's where the next one grows. On a phone
+       the cheese has one spot, next to Brick's home, so it always goes back. */
+    const taken = ico._drop && ico._drop(ico);
+    desk.append(ico);
+    if (taken || narrow()){ Object.assign(ico.style, from); return; }
+    ico.style.left = x + 'px';
+    ico.style.top  = y + 'px';
+    settle(ico, true);
+    icoPos[ico._key] = { x: parseFloat(ico.style.left), y: parseFloat(ico.style.top) };
+    saveIcoPos();
   };
   addEventListener('pointermove', move);
   addEventListener('pointerup', up);
+  addEventListener('pointercancel', up);
 }
 
-function makeIcon(desk, { key, svg, label, title, extraClass, open }){
-  const ico = el(`<button class="ico ${extraClass || ''}">
+function makeIcon(desk, { key, slot, svg, label, title, extraClass, open }){
+  const ico = el(`<button class="ico ${extraClass || ''}" type="button">
     <span class="g">${svg}</span><span class="l"></span></button>`);
   ico.querySelector('.l').textContent = label;
   ico.title = title;
   ico._key = key;
-  const pos = icoPos[key] || defaultIcoPos(key);
+  const pos = icoPos[key] || defaultIcoPos(slot);
   ico.style.left = pos.x + 'px';
   ico.style.top  = pos.y + 'px';
   ico.addEventListener('pointerdown', ev => dragIcon(ico, ev));
   /* a double-click fires click twice AND dblclick, so every activation
-     path has to go through one guard — otherwise the cheese block cut
-     three slices per double-click */
+     path has to go through one guard or it fires three times */
   const fire = () => {
     const now = Date.now();
     if (now - (ico._lastFire || 0) < 350) return;
@@ -639,31 +879,59 @@ function makeIcon(desk, { key, svg, label, title, extraClass, open }){
   return ico;
 }
 
+/* on a phone there's no desktop, so the cheese is the only icon, parked just
+   right of Brick's home. .desk scrolls with the page there, so these are
+   page coordinates. */
+function parkCheese(){
+  if (!cheeseIco || !narrow()) return;
+  const d = dock.getBoundingClientRect(), k = $('#desk').getBoundingClientRect();
+  cheeseIco.style.left = (d.right - k.left + 14) + 'px';
+  cheeseIco.style.top  = (d.top - k.top + 24) + 'px';
+}
+
 function renderDesk(){
   const desk = $('#desk');
   if (!desk) return;
   desk.innerHTML = '';
-  wins().forEach(w => {
-    const name = titleOf(w);
-    const shut = !!w.dataset.closed;
+  lift.innerHTML = '';                    /* in case a re-render lands mid-drag */
+  deskGrid = deskLayout();
+  desk.classList.toggle('compact', deskGrid.compact);
+  const present = narrow() ? [] : wins();
+  /* windows not in LEFT (blog, gallery, about) take the first free slots */
+  const taken = new Set([LEFT.indexOf('cheese'), ...present.map(w => LEFT.indexOf(keyOf(w)))]);
+  let free = 0;
+  present.forEach(w => {
+    const name = titleOf(w), key = keyOf(w), shut = !!w.dataset.closed;
+    let slot = LEFT.indexOf(key);
+    if (slot < 0){ while (taken.has(free)) free++; slot = free++; }
     const ico = makeIcon(desk, {
-      key: name,
+      key, slot,
       svg: ICONS[iconFor(name)],
       label: name,
       title: (shut ? 'open ' : 'go to ') + name,
       /* an OPEN window's icon is the spent one — the closed ones are what
          you can still act on, so they stay bright */
       extraClass: shut ? '' : 'open',
-      open: () => openWin(w)
+      open: ico => openWin(w, ico)
     });
     ico._win = w;
   });
-  /* not a window: click it and a slice drops out */
-  makeIcon(desk, {
-    key: 'cheese wheel', svg: CHEESE_BLOCK, label: 'cheese wheel',
-    extraClass: 'block', title: 'cut a slice for brick',
-    open: ico => { cutSlice(ico.getBoundingClientRect()); killHint('brick'); }
+  /* not a window: it's food. drag it onto brick. */
+  cheeseIco = makeIcon(desk, {
+    key: 'cheese', slot: LEFT.indexOf('cheese'), svg: CHEESE_BLOCK, label: 'cheese',
+    extraClass: 'block', title: '',
+    open: ico => sign(ico, !cheeseReady() ? 'growing back…'
+                         : brickCanEat() ? 'drag me onto brick' : 'brick is busy')
   });
+  cheeseIco._drop = ico => {
+    killHint('brick');
+    if (!brickCanEat() || !overlap(ico.querySelector('.g').getBoundingClientRect(),
+                                   brick.getBoundingClientRect())) return false;
+    eatCheese();
+    return true;
+  };
+  setCheese(cheeseIco);
+  parkCheese();
 }
 
 function renderTaskbar(){
@@ -677,11 +945,7 @@ function renderTaskbar(){
     const isMin = w.classList.contains('min');
     b.classList.toggle('isMin', isMin);
     b.classList.toggle('active', !isMin);
-    b.onclick = () => {
-      if (isMin){ w.classList.remove('min'); focusWin(w); }
-      else w.classList.add('min');
-      renderTaskbar();
-    };
+    b.onclick = () => isMin ? reopen(w) : winAction(w, 'min');
     box.append(b);
   });
   renderDesk();
@@ -703,10 +967,12 @@ function openStart(){
     items.append(b);
   };
 
-  const shut = wins().filter(w => w.dataset.closed);
-  if (shut.length){
-    items.append(el('<div class="cap">closed windows</div>'));
-    shut.forEach(w => add(titleOf(w), () => reopen(w)));
+  /* closed AND minimised: on a phone the taskbar has no window buttons, so a
+     minimised window would otherwise have no way back */
+  const hidden = wins().filter(w => w.classList.contains('min'));
+  if (hidden.length){
+    items.append(el('<div class="cap">closed &amp; minimised</div>'));
+    hidden.forEach(w => add(titleOf(w), () => openWin(w)));
     items.append(el('<hr>'));
   }
 
@@ -716,6 +982,7 @@ function openStart(){
   add('tidy windows', tidyWindows);
   add('cascade windows', () => cascade(true));
   add('shuffle brick', scatterBrick);
+  add('squish brick', squish);
 
   startMenu.hidden = false;
   startBtn.setAttribute('aria-expanded', 'true');
@@ -731,20 +998,27 @@ startBtn.onclick = e => {
 /* each hint sits to the LEFT of what it points at, where the desktop is
    empty — putting them to the right covered the name and the swatches.
    if there's no room on the left (narrow window), flip to the right. */
+/* would hint n, placed at page x,y, sit on a desktop icon? */
+const onIcon = (n, x, y) => $$('#desk .ico').some(i => {
+  const o = i.getBoundingClientRect(), L = x - scrollX, T = y - scrollY;
+  return L < o.right && L + n.offsetWidth > o.left && T < o.bottom && T + n.offsetHeight > o.top;
+});
 const leftOf = (r, n, dy) => {
-  const x = r.left + scrollX - n.offsetWidth - 16;
-  return x < scrollX + 8
+  const x = r.left + scrollX - n.offsetWidth - 16, y = r.top + scrollY + dy;
+  /* the left is also where the icon column lives, and the icons are there
+     for good — so if the hint would cover one, it flips instead */
+  return x < scrollX + 8 || onIcon(n, x, y)
     /* flipped: sit low so it lands on body copy rather than the heading */
     ? [r.right + scrollX + 16, r.bottom + scrollY - n.offsetHeight - 2, 'left']
-    : [x, r.top + scrollY + dy, 'right'];
+    : [x, y, 'right'];
 };
 const HINTS = {
   brick: { text: '<b>drag brick</b><br>feed him cheese',
-           place: n => leftOf($('#brick').getBoundingClientRect(), n, 30) },
+           place: n => leftOf($('#brick').getBoundingClientRect(), n, 92) },
   theme: { text: '<b>4 themes</b><br>pick one',
            place: n => leftOf($('.themes').getBoundingClientRect(), n, -4) }
 };
-const hintDone = k => { try { return localStorage.getItem('hint-' + k); } catch { return null; } };
+const hintDone = k => store.get('hint-' + k);
 const hintNodes = {};
 
 function placeHints(){
@@ -763,11 +1037,11 @@ function killHint(k){
   if (!n) return;
   n.remove();
   delete hintNodes[k];
-  try { localStorage.setItem('hint-' + k, '1'); } catch {}
+  store.set('hint-' + k, '1');
 }
 
 function showHints(){
-  if (innerWidth < 860) return;           /* no room, and no hover to explain */
+  if (narrow()) return;                   /* no room, and no hover to explain */
   for (const k of Object.keys(HINTS)){
     if (hintDone(k) || hintNodes[k]) continue;
     const n = el(`<div class="hint" data-dir="right">${HINTS[k].text}</div>`);
@@ -780,7 +1054,7 @@ function showHints(){
 /* one capture-phase listener does the lot: dismissing hints (using the thing
    a hint points at is what kills it) and closing the two popups */
 document.addEventListener('pointerdown', e => {
-  if (e.target.closest('#brick, .cheese')) killHint('brick');
+  if (e.target.closest('#brick, .ico.block')) killHint('brick');
   if (e.target.closest('.sw')) killHint('theme');
   if (!startMenu.hidden && !e.target.closest('#startmenu,#start')) closeStart();
   if (!ctxMenu.hidden && !e.target.closest('.ctxmenu')) hideCtx();
@@ -831,6 +1105,15 @@ const windowItems = w => [
   { label: 'close', run: () => winAction(w, 'close') }
 ];
 
+/* the cheese isn't a window, so it gets its own menu — which is also a way to
+   feed Brick without dragging, for anyone on a trackpad */
+const cheeseItems = () => [
+  { label: !cheeseReady() ? 'growing back…' : brickCanEat() ? 'feed to brick' : 'brick is busy',
+    run: () => { eatCheese(); killHint('brick'); } },
+  '-',
+  ...deskItems()
+];
+
 const deskItems = () => {
   const shut = wins().filter(w => w.dataset.closed);
   return [
@@ -838,6 +1121,7 @@ const deskItems = () => {
     { label: 'cascade windows', run: () => cascade(true) },
     shut.length && { label: `open all (${shut.length})`, run: () => shut.forEach(reopen) },
     { label: 'shuffle brick', run: scatterBrick },
+    { label: 'squish brick', run: squish },
     '-',
     ...['win98','soft','retro','hacker'].map(t => ({
       label: THEME_NAME[t], tick: root.dataset.theme === t, run: () => setTheme(t)
@@ -850,12 +1134,15 @@ addEventListener('contextmenu', e => {
      still want "open in new tab" and "copy" */
   if (e.target.closest('a, input, textarea, select')) return;
   const ico = e.target.closest('.ico');
-  const hd  = e.target.closest('.show > .hd');
+  /* .wrap only: the squish pop-up has a title bar too, but it isn't a
+     managed window and minimise/maximise did odd things to it */
+  const hd  = e.target.closest('.wrap .show > .hd');
   e.preventDefault();
   closeStart();
-  if (ico)     showCtx(e.clientX, e.clientY, windowItems(ico._win));
-  else if (hd) showCtx(e.clientX, e.clientY, windowItems(hd.parentElement));
-  else         showCtx(e.clientX, e.clientY, deskItems());
+  if (ico && ico._win) showCtx(e.clientX, e.clientY, windowItems(ico._win));
+  else if (ico)        showCtx(e.clientX, e.clientY, cheeseItems());
+  else if (hd)         showCtx(e.clientX, e.clientY, windowItems(hd.parentElement));
+  else                 showCtx(e.clientX, e.clientY, deskItems());
 });
 addEventListener('keydown', e => { if (e.key === 'Escape'){ hideCtx(); closeStart(); } });
 addEventListener('scroll', hideCtx, { passive: true });
@@ -875,21 +1162,33 @@ document.addEventListener('click', e => {
 });
 
 const ctxTools = {
-  home:    '<button class="tool" id="shuffle">shuffle brick</button>',
-  blog:    '<button class="tool">search</button>',
-  gallery: '<button class="tool">grid</button>',
-  about:   `<a class="tool" href="${D.profile.resume}">resume</a>`
+  home:    '<button class="tool" id="shuffle">shuffle brick</button>'
+         + '<button class="tool" id="squish">squish brick</button>',
+  about:   `<a class="tool" href="${esc(D.profile.resume)}">resume</a>`
 };
 function go(id){
   $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.page === id));
   $$('.page').forEach(p => p.classList.toggle('on', p.id === id));
   $('#ctx').innerHTML = ctxTools[id] || '';
   const sh = $('#shuffle'); if (sh) sh.onclick = scatterBrick;
+  const sq = $('#squish');  if (sq) sq.onclick = squish;
   if (docked) setTimeout(redock, 30);
   mountWindows();          /* idempotent; this tab may never have been shown */
   renderTaskbar();
+  setTimeout(settleAll, 60);
 }
 $$('.tab').forEach(t => t.onclick = () => go(t.dataset.page));
+
+/* Only the windows that matter are open on arrival; the rest wait behind their
+   desktop icons. With all seven open, every icon was already "open", so a
+   double-click did nothing visible and people decided the icons were dead.
+   Phones have no desktop icons, so there everything stays open. */
+const START_OPEN = ['project showcase', 'writing showcase', 'elsewhere'];
+if (!narrow()) $$('#home .show').forEach(w => {
+  if (START_OPEN.includes(titleOf(w))) return;
+  w.dataset.closed = '1';
+  w.classList.add('min');
+});
 go('home');
 /* let blog/*.html link back to a specific tab: index.html#blog */
 const fromHash = location.hash.slice(1);
@@ -911,8 +1210,13 @@ function tick(){
 }
 tick(); setInterval(tick, 20000);
 redock();
-mountWindows();
-renderTaskbar();
 showHints();
-addEventListener('load', () => { redock(); placeHints(); });
+addEventListener('load', () => { redock(); parkCheese(); placeHints(); settleAll(); });
+/* default icon spots depend on the screen, and crossing the phone breakpoint
+   swaps the whole desktop for a single cheese — so rebuild, then re-check */
+let settleT;
+addEventListener('resize', () => {
+  clearTimeout(settleT);
+  settleT = setTimeout(() => { renderDesk(); placeHints(); settleAll(); }, 200);
+});
 })();

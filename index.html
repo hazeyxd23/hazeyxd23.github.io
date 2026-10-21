@@ -6,8 +6,9 @@
 <title>hazeyxd23</title>
 <meta name="description" content="personal site — projects, writing, and brick the mouse.">
 <link rel="stylesheet" href="css/style.css">
+<script src="js/theme.js"></script>
 </head>
-<body>
+<body class="os">
 <div id="wall"></div>
 <div class="desk" id="desk"></div>
 
@@ -44,18 +45,17 @@
         <div class="show stage">
           <div class="hd">project showcase
             <span class="r">hover to fan · click to spread</span>
-            <span class="btns"><b>_</b><b>□</b><b>×</b></span>
           </div>
           <div class="bd"><div class="stack" id="stack"></div></div>
         </div>
 
         <div class="show">
-          <div class="hd">writing showcase <span class="r" id="latestCount"></span><span class="btns"><b>_</b><b>×</b></span></div>
+          <div class="hd">writing showcase <span class="r" id="latestCount"></span></div>
           <div id="latest"></div>
         </div>
 
         <div class="show">
-          <div class="hd">screenshot showcase<span class="btns"><b>_</b><b>×</b></span></div>
+          <div class="hd">screenshot showcase</div>
           <div class="bd"><div class="tiles" id="homeShots"></div></div>
         </div>
 
@@ -86,7 +86,7 @@
   <section class="page" id="blog">
     <div class="chips" id="blogChips"></div>
     <div class="show">
-      <div class="hd">posts <span class="r" id="postCount"></span><span class="btns"><b>_</b><b>×</b></span></div>
+      <div class="hd">posts <span class="r" id="postCount"></span></div>
       <div id="postList"></div>
     </div>
   </section>
@@ -100,7 +100,7 @@
       <button class="chip" data-view="games">games</button>
       <button class="chip" data-view="film">film</button>
     </div>
-    <div class="show">
+    <div class="show" data-key="gallery">
       <div class="hd" id="galleryHd"></div>
       <div id="galleryBody"></div>
     </div>
