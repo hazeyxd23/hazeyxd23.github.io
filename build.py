@@ -330,16 +330,18 @@ def bundle():
     parts.append((HERE / "js/app.js").read_text(encoding="utf-8"))
     js = "\n".join(parts)
 
-    for asset in sorted((HERE / "assets").iterdir()):
+    # every file under assets/, subfolders included (projects/, shots/)
+    for asset in sorted((HERE / "assets").rglob("*")):
         if not asset.is_file():
             continue
+        rel = asset.relative_to(HERE / "assets").as_posix()
         uri = data_uri(asset)
         if uri is None:
-            print(f"  bundle: left {asset.name} as a link (unknown type)")
+            print(f"  bundle: left {rel} as a link (unknown type)")
             continue
-        css = css.replace(f"../assets/{asset.name}", uri)
-        js = js.replace(f"assets/{asset.name}", uri)
-        html_src = html_src.replace(f'"assets/{asset.name}"', f'"{uri}"')
+        css = css.replace(f"../assets/{rel}", uri)
+        js = js.replace(f"assets/{rel}", uri)
+        html_src = html_src.replace(f'"assets/{rel}"', f'"{uri}"')
 
     html_src = html_src.replace(
         '<link rel="stylesheet" href="css/style.css">', f"<style>\n{css}\n</style>")

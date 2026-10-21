@@ -251,6 +251,7 @@ a:hover{color:var(--accent2)}
 .shelf:first-child{padding-top:10px}
 .shelf span{letter-spacing:0}
 .tiles.wide{grid-template-columns:repeat(4,1fr)}
+.tiles.shots .tile{aspect-ratio:16/10}      /* screenshots are 16:10, not square */
 
 /* ---------- project stack ---------- */
 .stage{overflow:visible}

@@ -204,9 +204,12 @@ $('#latest').innerHTML = D.posts.slice(0, 4).map(postRow).join('')
   || `<div class="row"><span class="sub">no posts yet</span></div>`;
 $('#latestCount').textContent = `${Math.min(4, D.posts.length)} of ${D.posts.length}`;
 
-/* screenshot showcase */
-const tile = p => `<div class="tile" ${shot(p)}><span>${esc(p.caption||'')}</span></div>`;
-$('#homeShots').innerHTML = D.photos.slice(0, 6).map(tile).join('');
+/* screenshot showcase: project screenshots if there are any, else photos.
+   a tile with a url is a link to the full-size image */
+const tile = p => p.url
+  ? `<a class="tile" href="${esc(p.url)}" target="_blank" rel="noopener" ${shot(p)}><span>${esc(p.caption||'')}</span></a>`
+  : `<div class="tile" ${shot(p)}><span>${esc(p.caption||'')}</span></div>`;
+$('#homeShots').innerHTML = (D.screenshots || D.photos).slice(0, 6).map(tile).join('');
 
 /* sidebar */
 const specRows = () => D.specs.map(([k,v]) => `<div class="spec"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');

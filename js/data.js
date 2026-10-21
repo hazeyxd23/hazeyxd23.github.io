@@ -17,18 +17,45 @@ window.DATA = {
     email: "you@example.com"
   },
 
-  /* ---- Home: the polaroid stack. add/remove freely, layout adapts ---- */
+  /* ---- Home: the polaroid stack. add/remove freely, layout adapts ----
+     The LAST one sits on top of the stack. `src` is the picture on the card
+     (assets/projects/); `color` is the fallback if it's missing. The two API
+     projects have no UI to screenshot, so their cards are pipeline diagrams
+     drawn from their READMEs — swap in a real screenshot any time. */
   projects: [
-    { title: "habit tracker",   meta: "python · fastapi",    color: "#5fd8cf", url: "#",
-      note: "tracks guitar, reading and leetcode. charts the streaks." },
-    { title: "tcp playground",  meta: "rust · tokio",        color: "#ef7fb6", url: "#",
-      note: "a toy server i keep breaking on purpose." },
-    { title: "compiler toy",    meta: "c · lexer + parser",  color: "#f7e08c", url: "#",
-      note: "hand-written lexer, recursive descent parser." },
-    { title: "this website",    meta: "html · css · spite",  color: "#a97bd8", url: "#",
-      note: "brick lives here." },
-    { title: "scraper thing",   meta: "python · playwright", color: "#7ee0a0", url: "#",
-      note: "pulls data i'm too lazy to copy by hand." }
+    { title: "this website",      meta: "html · css · js",                 color: "#a97bd8",
+      src: "assets/projects/portfolio.jpg",
+      url: "https://github.com/hazeyxd23/hazeyxd23.github.io",
+      note: "a windows 98 desktop you can poke at. brick lives here." },
+    { title: "discount-tracker",  meta: "react · express · mysql",         color: "#f7e08c",
+      src: "assets/projects/discount-tracker.png",
+      url: "https://github.com/hazeyxd23/discount-tracker",
+      note: "paste a product link and a target price; it re-checks on a schedule and alerts you when it drops." },
+    { title: "rag-document-qa",   meta: "python · fastapi · faiss",        color: "#ef7fb6",
+      src: "assets/projects/rag-document-qa.png",
+      url: "https://github.com/hazeyxd23/rag-document-qa",
+      note: "answers questions from pdfs, not model knowledge, citing file and page. retrieval from scratch, no langchain." },
+    { title: "yogurt",            meta: "fastapi · react · postgres · llm", color: "#5fd8cf",
+      src: "assets/projects/yogurt.jpg",
+      url: "https://github.com/hazeyxd23/yogurt",
+      note: "habit tracker built as a mac os x aqua desktop, with an llm that answers questions about your own data in read-only sql." }
+  ],
+
+  /* ---- Home: screenshot showcase. shots of the projects above, at tile
+     size in assets/shots/; each tile opens the full-size image ---- */
+  screenshots: [
+    { caption: "yogurt · ask, llm → sql", src: "assets/shots/yogurt-ask.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/ask.png" },
+    { caption: "yogurt · notes graph",    src: "assets/shots/yogurt-graph.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/graph.png" },
+    { caption: "yogurt · leetcode",       src: "assets/shots/yogurt-leetcode.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/leetcode.png" },
+    { caption: "yogurt · reading",        src: "assets/shots/yogurt-reading.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/reading.png" },
+    { caption: "yogurt · guitar",         src: "assets/shots/yogurt-guitar.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/guitar.png" },
+    { caption: "yogurt · dark mode",      src: "assets/shots/yogurt-dark.jpg",
+      url: "https://github.com/hazeyxd23/yogurt/blob/main/docs/screenshots/dark.png" }
   ],
 
   /* ---- Blog ----
