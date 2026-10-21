@@ -57,13 +57,15 @@ against rather than a pile of unrelated effects.
   taskbar buttons, a Start menu, right-click menus on the desktop and on window
   chrome, and desktop icons you can rearrange — positions persist between
   visits.
-- **Four themes** that are the same interface in different colours, plus a
-  fifth-column outlier (matrix) that deliberately looks nothing like the others.
+- **Four themes.** Three are the same interface in different colours; the
+  fourth, matrix, is a deliberate outlier that looks nothing like them.
 - **A blog** written in markdown and compiled to static pages by a ~70 line
   renderer in `build.py`.
 - **A project stack** of polaroids that fans on hover and expands the whole
   window when clicked, with each card linking out to its repo.
 - **Brick**, and the cheese.
+
+![The projects window grown to fill the screen, one card per project, each opening its repo](docs/projects.png)
 
 ## Running it locally
 
