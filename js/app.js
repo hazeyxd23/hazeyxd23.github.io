@@ -256,11 +256,18 @@ function renderGallery(view='bookshelf'){
                   + group('read', D.books.read, b => b.rating ? ` · ${'★'.repeat(b.rating)}` : '')
                   + group('want to read', D.books.want);
   } else {
-    hd.textContent = view;
+    /* the window title follows the chip, so film reads as "movies & tv" */
+    hd.textContent = { film: 'movies & tv' }[view] || view;
     const list = D.ratings.filter(r => r.kind === view);
-    box.innerHTML = list.map(r => `
+    const row = r => `
       <div class="row"><span>${esc(r.title)}${r.note ? ` <span class="sub">— ${esc(r.note)}</span>` : ''}</span>
-      <span class="score">${r.score}/10</span></div>`).join('');
+      <span class="score">${esc(r.score)}/10</span></div>`;
+    /* entries with a `group` get a heading, like the bookshelf's sections */
+    const groups = [...new Set(list.map(r => r.group || ''))];
+    box.innerHTML = groups.map(g => {
+      const items = list.filter(r => (r.group || '') === g);
+      return (g ? `<div class="shelf">${esc(g)}<span>${items.length}</span></div>` : '') + items.map(row).join('');
+    }).join('') || `<div class="row"><span class="sub">nothing here yet</span></div>`;
   }
 }
 renderGallery();

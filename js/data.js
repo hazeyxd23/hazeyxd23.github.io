@@ -69,21 +69,26 @@ window.DATA = {
 
   /* ---- Gallery > bookshelf ---- */
   books: {
-    reading: [ { title: "the pragmatic programmer", author: "hunt & thomas" } ],
-    read:    [ { title: "designing data-intensive applications", author: "kleppmann", rating: 5 },
-               { title: "the rust book", author: "klabnik & nichols", rating: 4 } ],
-    want:    [ { title: "crafting interpreters", author: "nystrom" },
-               { title: "the mythical man-month", author: "brooks" } ]
+    reading: [ { title: "infinite jest", author: "david foster wallace" } ],
+    read:    [ { title: "fire and blood", author: "george r. r. martin" },
+               { title: "a knight of the seven kingdoms", author: "george r. r. martin" } ],
+    want:    [ { title: "all the pretty horses", author: "cormac mccarthy" },
+               { title: "suttree", author: "cormac mccarthy" } ]
   },
 
-  /* ---- Gallery > ratings. kind: anime | games | film ---- */
+  /* ---- Gallery > ratings ----
+     kind: anime | games | film (the "movies & tv" chip). Optional `group`
+     puts a heading inside the view (games > recent); optional `note` adds a
+     line after the title. */
   ratings: [
-    { kind: "anime", title: "frieren",            score: 9, note: "pacing is the point" },
-    { kind: "anime", title: "monster",            score: 9, note: "" },
-    { kind: "games", title: "elden ring",         score: 9, note: "still not finished" },
-    { kind: "games", title: "hollow knight",      score: 10, note: "" },
-    { kind: "film",  title: "blade runner 2049",  score: 9, note: "" },
-    { kind: "film",  title: "whiplash",           score: 8, note: "" }
+    { kind: "anime", title: "saiki k",                 score: 10 },
+    { kind: "anime", title: "attack on titan",         score: 9 },
+    { kind: "games", group: "recent", title: "bloodborne",              score: 10 },
+    { kind: "games", group: "recent", title: "hollow knight: silksong", score: 10 },
+    { kind: "film",  title: "mickey 17",               score: 9 },
+    { kind: "film",  title: "resident evil",           score: 6 },
+    { kind: "film",  title: "the boys",                score: 5 },
+    { kind: "film",  title: "whiplash",                score: 9 }
   ],
 
   /* ---- About > setup (and the pc specs window) ---- */
@@ -106,8 +111,7 @@ window.DATA = {
       note: "tiling wayland compositor. the animations are the vice." },
     { name: "cachyos",     color: "#7ee0a0", url: "https://cachyos.org",
       note: "arch, pre-tuned, without me breaking it on day one." },
-    { name: "neovim",      color: "#57a143", url: "https://neovim.io",
-      note: "still remapping things two years later." },
+    { name: "pycharm",     color: "#21d789", url: "https://www.jetbrains.com/pycharm/" },
     { name: "python",      color: "#f7e08c", url: "https://python.org",
       note: "the default tool." },
     { name: "rust",        color: "#ef7fb6", url: "https://rust-lang.org",
