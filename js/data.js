@@ -8,7 +8,7 @@ window.DATA = {
   profile: {
     handle: "hazeyxd23",
     status: "currently online",
-    blurb: "cs student · backend-leaning · mostly python. i build small services, take them apart to see why they got slow, and write it down.",
+    blurb: "cs student · backend-leaning · mostly python. i build small services",
     // longer version, shown on the About tab
     bio: `cs student. i build backends, mostly in python with fastapi, and i'm getting
           into ai/ml: retrieval, local models, and getting llms to answer from real data
@@ -120,6 +120,7 @@ window.DATA = {
 
   /* ---- link tree ---- */
   links: [
-    { name: "github",  url: "https://github.com/hazeyxd23" }
+    { name: "github",   url: "https://github.com/hazeyxd23" },
+    { name: "linkedin", url: "https://www.linkedin.com/in/bhavya-singh-baghel" }
   ]
 };
