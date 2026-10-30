@@ -3,6 +3,7 @@ title: hello world
 date: 2026-07-21
 tags: [notes]
 summary: the first post, and a working demo of every bit of markdown this blog supports.
+draft: true
 ---
 
 This is a starter post. **Rewrite it or delete it** — it exists so you can see the

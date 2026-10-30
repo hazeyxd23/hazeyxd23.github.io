@@ -250,7 +250,6 @@ a:hover{color:var(--accent2)}
   color:var(--muted); border-bottom:1px dashed var(--muted)}
 .shelf:first-child{padding-top:10px}
 .shelf span{letter-spacing:0}
-.tiles.wide{grid-template-columns:repeat(4,1fr)}
 .tiles.shots .tile{aspect-ratio:16/10}      /* screenshots are 16:10, not square */
 
 /* ---------- project stack ---------- */
@@ -668,7 +667,7 @@ body.zoomed .show.squishwin{z-index:141}
   .pol .shot{height:122px}
   .pol .note{display:none}
   #brick{width:90px}
-  .tiles, .tiles.wide{grid-template-columns:repeat(2,1fr)}
+  .tiles{grid-template-columns:repeat(2,1fr)}
   /* the taskbar can't hold window buttons and the tray at phone width — the
      buttons squeezed to nothing. Windows are listed in Start instead. */
   .tasks{display:none}

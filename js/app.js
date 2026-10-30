@@ -204,12 +204,12 @@ $('#latest').innerHTML = D.posts.slice(0, 4).map(postRow).join('')
   || `<div class="row"><span class="sub">no posts yet</span></div>`;
 $('#latestCount').textContent = `${Math.min(4, D.posts.length)} of ${D.posts.length}`;
 
-/* screenshot showcase: project screenshots if there are any, else photos.
+/* screenshot showcase: the project screenshots in D.screenshots.
    a tile with a url is a link to the full-size image */
 const tile = p => p.url
   ? `<a class="tile" href="${esc(p.url)}" target="_blank" rel="noopener" ${shot(p)}><span>${esc(p.caption||'')}</span></a>`
   : `<div class="tile" ${shot(p)}><span>${esc(p.caption||'')}</span></div>`;
-$('#homeShots').innerHTML = (D.screenshots || D.photos).slice(0, 6).map(tile).join('');
+$('#homeShots').innerHTML = (D.screenshots || []).slice(0, 6).map(tile).join('');
 
 /* sidebar */
 const specRows = () => D.specs.map(([k,v]) => `<div class="spec"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join('');
@@ -220,7 +220,7 @@ $('#links').innerHTML  = D.links.map(l => `<a href="${esc(l.url)}">${esc(l.name)
 const booksRead = D.books.read.length;
 $('#counts').innerHTML = `
   <div class="row"><span>projects</span><b>${D.projects.length}</b></div>
-  <div class="row"><span>posts</span><b>${D.posts.length}</b></div>
+  ${D.posts.length ? `<div class="row"><span>posts</span><b>${D.posts.length}</b></div>` : ''}
   <div class="row"><span>books read</span><b>${booksRead}</b></div>
   <div class="row"><span>things rated</span><b>${D.ratings.length}</b></div>
   <div class="row"><span>cheese fed to brick</span><b id="cheeseCount">0</b></div>`;
@@ -235,13 +235,19 @@ function renderPosts(tag='all'){
 }
 renderPosts();
 
+/* Nothing published yet: hide the blog everywhere — its tab, its page, and
+   the writing window on the desktop — rather than show an empty one. It all
+   comes back by itself once build.py has a non-draft post to list. */
+if (!D.posts.length){
+  $('.tab[data-page="blog"]')?.remove();
+  $('#blog')?.remove();
+  $('#latest')?.closest('.show')?.remove();
+}
+
 /* ---------------- gallery ---------------- */
-function renderGallery(view='photos'){
+function renderGallery(view='bookshelf'){
   const box = $('#galleryBody'), hd = $('#galleryHd');
-  if (view === 'photos'){
-    hd.textContent = 'photos';
-    box.innerHTML = `<div class="bd"><div class="tiles wide">${D.photos.map(tile).join('')}</div></div>`;
-  } else if (view === 'bookshelf'){
+  if (view === 'bookshelf'){
     hd.textContent = 'bookshelf';
     const group = (label, arr, extra=()=>'') => `
       <div class="shelf">${label}<span>${arr.length}</span></div>
@@ -260,12 +266,19 @@ function renderGallery(view='photos'){
 renderGallery();
 
 /* ---------------- about ---------------- */
+/* resume and email are optional in data.js; show whichever exist */
+const contact = () => {
+  const bits = [
+    D.profile.resume && `<a href="${esc(D.profile.resume)}">resume</a>`,
+    D.profile.email  && `<a href="mailto:${esc(D.profile.email)}">${esc(D.profile.email)}</a>`
+  ].filter(Boolean);
+  return bits.length ? `<p style="margin-top:14px">${bits.join(' · ')}</p>` : '';
+};
 function renderAbout(view='bio'){
   const box = $('#aboutBody');
   if (view === 'bio'){
     box.innerHTML = `
-      <div class="show" data-key="about"><div class="hd">bio</div><div class="bd">${esc(D.profile.bio)}
-        <p style="margin-top:14px"><a href="${esc(D.profile.resume)}">resume</a> · <a href="mailto:${esc(D.profile.email)}">${esc(D.profile.email)}</a></p></div></div>`;
+      <div class="show" data-key="about"><div class="hd">bio</div><div class="bd">${esc(D.profile.bio)}${contact()}</div></div>`;
   } else if (view === 'setup'){
     box.innerHTML = `<div class="show" data-key="about"><div class="hd">hardware</div><div class="bd">${specRows()}</div></div>`;
   } else if (view === 'tech'){
@@ -900,12 +913,16 @@ function renderDesk(){
   deskGrid = deskLayout();
   desk.classList.toggle('compact', deskGrid.compact);
   const present = narrow() ? [] : wins();
-  /* windows not in LEFT (blog, gallery, about) take the first free slots */
-  const taken = new Set([LEFT.indexOf('cheese'), ...present.map(w => LEFT.indexOf(keyOf(w)))]);
+  /* windows in LEFT keep LEFT's order but close up around any that aren't
+     there (no blog yet = no writing window, and no gap where it was); the
+     cheese keeps its own slot; windows not in LEFT (gallery, about) take the
+     first free slots */
+  const listed = LEFT.filter(k => k !== 'cheese' && present.some(w => keyOf(w) === k));
+  const taken = new Set([LEFT.indexOf('cheese'), ...listed.map((_, i) => i)]);
   let free = 0;
   present.forEach(w => {
     const name = titleOf(w), key = keyOf(w), shut = !!w.dataset.closed;
-    let slot = LEFT.indexOf(key);
+    let slot = listed.indexOf(key);
     if (slot < 0){ while (taken.has(free)) free++; slot = free++; }
     const ico = makeIcon(desk, {
       key, slot,
@@ -1167,7 +1184,7 @@ document.addEventListener('click', e => {
 const ctxTools = {
   home:    '<button class="tool" id="shuffle">shuffle brick</button>'
          + '<button class="tool" id="squish">squish brick</button>',
-  about:   `<a class="tool" href="${esc(D.profile.resume)}">resume</a>`
+  about:   D.profile.resume ? `<a class="tool" href="${esc(D.profile.resume)}">resume</a>` : ''
 };
 function go(id){
   $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.page === id));
@@ -1186,7 +1203,7 @@ $$('.tab').forEach(t => t.onclick = () => go(t.dataset.page));
    desktop icons. With all seven open, every icon was already "open", so a
    double-click did nothing visible and people decided the icons were dead.
    Phones have no desktop icons, so there everything stays open. */
-const START_OPEN = ['project showcase', 'writing showcase', 'elsewhere'];
+const START_OPEN = ['project showcase', D.posts.length ? 'writing showcase' : 'screenshot showcase', 'elsewhere'];
 if (!narrow()) $$('#home .show').forEach(w => {
   if (START_OPEN.includes(titleOf(w))) return;
   w.dataset.closed = '1';
@@ -1205,8 +1222,6 @@ if ($$('.tab').some(t => t.dataset.page === fromHash)){
 }
 
 /* ---------------- toolbar ---------------- */
-$('#nowPlaying').textContent = D.toolbar.nowPlaying;
-$('#visits').textContent     = D.toolbar.visits;
 function tick(){
   $('#clock').textContent = new Date().toLocaleTimeString('en-GB',
     { timeZone:'Asia/Kolkata', hour:'2-digit', minute:'2-digit' }) + ' IST';

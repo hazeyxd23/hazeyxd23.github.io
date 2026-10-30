@@ -10,11 +10,14 @@ window.DATA = {
     status: "currently online",
     blurb: "cs student · backend-leaning · mostly python. i build small services, take them apart to see why they got slow, and write it down.",
     // longer version, shown on the About tab
-    bio: `the longer version goes here. what you study, what you're building, what you
-          actually want to be doing. two or three short paragraphs is plenty — anyone
-          who wants more will click the resume.`,
-    resume: "#",
-    email: "you@example.com"
+    bio: `cs student. i build backends, mostly in python with fastapi, and i'm getting
+          into ai/ml: retrieval, local models, and getting llms to answer from real data
+          instead of guessing. the projects window has the work — a rag service that
+          cites file and page, a habit tracker whose llm answers questions in read-only
+          sql, and a price tracker that tells you when something drops.`,
+    /* optional — add either and it shows up on the About tab:
+       resume: "assets/resume.pdf",
+       email: "you@somewhere" */
   },
 
   /* ---- Home: the polaroid stack. add/remove freely, layout adapts ----
@@ -64,16 +67,6 @@ window.DATA = {
      file, then run `python3 build.py`. */
   posts: [],
 
-  /* ---- Gallery > photos. drop files in assets/ and set src ---- */
-  photos: [
-    { caption: "desk, 3am",      color: "#5fd8cf", src: "" },
-    { caption: "rice v4",        color: "#a97bd8", src: "" },
-    { caption: "keeb build",     color: "#ef7fb6", src: "" },
-    { caption: "delhi rooftop",  color: "#7ee0a0", src: "" },
-    { caption: "cat (not brick)",color: "#f7e08c", src: "" },
-    { caption: "monitor glow",   color: "#f6d7ef", src: "" }
-  ],
-
   /* ---- Gallery > bookshelf ---- */
   books: {
     reading: [ { title: "the pragmatic programmer", author: "hunt & thomas" } ],
@@ -93,15 +86,16 @@ window.DATA = {
     { kind: "film",  title: "whiplash",           score: 8, note: "" }
   ],
 
-  /* ---- About > setup ---- */
+  /* ---- About > setup (and the pc specs window) ---- */
   specs: [
-    ["cpu", "placeholder"],
-    ["gpu", "placeholder"],
-    ["ram", "placeholder"],
-    ["keyboard", "placeholder"],
-    ["monitor", "placeholder"],
+    ["cpu", "ryzen 5 5600x"],
+    ["gpu", "radeon rx 580 8gb"],
+    ["os", "cachyos"],
     ["wm", "hyprland"],
-    ["os", "cachyos"]
+    ["terminal", "kitty"],
+    ["browser", "zen"],
+    ["audio", "arturia minifuse 2"],
+    ["headphones", "ath-m50x"]
   ],
 
   /* ---- About > tech i like (the badges in the sidebar too) ---- */
@@ -122,15 +116,6 @@ window.DATA = {
 
   /* ---- link tree ---- */
   links: [
-    { name: "github",  url: "https://github.com/hazeyxd23" },
-    { name: "x",       url: "#" },
-    { name: "spotify", url: "#" },
-    { name: "mail",    url: "#" }
-  ],
-
-  /* ---- toolbar ---- */
-  toolbar: {
-    nowPlaying: "not playing",          // wire to a spotify widget later
-    visits: "000482"                     // swap for a real counter service
-  }
+    { name: "github",  url: "https://github.com/hazeyxd23" }
+  ]
 };

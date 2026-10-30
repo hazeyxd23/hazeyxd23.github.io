@@ -9,8 +9,8 @@ My portfolio, built as a Windows 98 desktop you can poke at.
 Every panel is a real window: drag it, minimise it to the taskbar, maximise it,
 or close it and reopen it from its desktop icon or the Start menu. Click the
 project stack and the window grows to fill the screen, one card per repo.
-There's a blog, four themes, and Brick, a mouse you can drag around, feed
-cheese and squish.
+There are four themes, and Brick, a mouse you can drag around, feed cheese and
+squish.
 
 ![The projects window expanded, each card opening its repo](docs/projects.png)
 
@@ -46,6 +46,7 @@ python3 build.py               # after adding or editing a post in posts/
 To add a project, append an entry to `projects` in `js/data.js`. To add a post,
 write `posts/YYYY-MM-DD-slug.md` with a short frontmatter block (`title`,
 `date`, `tags`, and `draft: true` to keep it unpublished), then run the build.
+The Blog tab only appears once there's at least one published post.
 
 ## Credits
 
